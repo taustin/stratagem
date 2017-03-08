@@ -99,10 +99,8 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	public Expression visitFunctionApp(FeatherweightJavaScriptParser.FunctionAppContext ctx) {
 		Expression f = visit(ctx.expr());
 		List<Expression> args = new ArrayList<Expression>();
-		for (int i=1; i<ctx.args().getChildCount()-1; i+=2) {
-			Expression arg = visit(ctx.args().getChild(i));
-			args.add(arg);
-		}
+		Expression arg = visit(ctx.args().getChild(1));
+		args.add(arg);
 		return new FunctionAppExpr(f, args);
 	}
 
