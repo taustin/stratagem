@@ -34,7 +34,7 @@ public class ExpressionTest {
         Value v = new IntVal(3);
         env.updateVar("x", v);
         Expression e = new VarExpr("y");
-        assertEquals(new NullVal(), e.evaluate(env));
+        assertEquals(new UnitVal(), e.evaluate(env));
     }
     
     @Test

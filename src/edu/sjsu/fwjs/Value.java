@@ -67,14 +67,14 @@ class StringVal implements Value {
     }
 }
 
-class NullVal implements Value {
+class UnitVal implements Value {
     @Override
     public boolean equals(Object that) {
-        return (that instanceof NullVal);
+        return (that instanceof UnitVal);
     }
     @Override
     public String toString() {
-        return "null";
+        return "()";
     }
 }
 

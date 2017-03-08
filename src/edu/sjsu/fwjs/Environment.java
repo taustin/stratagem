@@ -30,7 +30,7 @@ public class Environment {
         if (env.containsKey(varName)) {
             return env.get(varName);
         } else if (outerEnv == null) {
-            return new NullVal();
+            return new UnitVal();
         } else {
             return outerEnv.resolveVar(varName);
         }

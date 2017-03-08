@@ -163,7 +163,7 @@ class WhileExpr implements Expression {
             this.body.evaluate(env);
             return this.evaluate(env);
         } else {
-            return new NullVal();
+            return new UnitVal();
         }
     }
 }

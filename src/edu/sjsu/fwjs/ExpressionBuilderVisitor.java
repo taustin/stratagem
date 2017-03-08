@@ -34,7 +34,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	public Expression visitIfThen(FeatherweightJavaScriptParser.IfThenContext ctx) {
 		Expression cond = visit(ctx.expr());
 		Expression thn = visit(ctx.block());
-		return new IfExpr(cond, thn, new ValueExpr(new NullVal()));
+		return new IfExpr(cond, thn, new ValueExpr(new UnitVal()));
 	}
 
 	@Override
@@ -159,8 +159,8 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitNull(FeatherweightJavaScriptParser.NullContext ctx) {
-		return new ValueExpr(new NullVal());
+	public Expression visitUnit(FeatherweightJavaScriptParser.UnitContext ctx) {
+		return new ValueExpr(new UnitVal());
 	}
 
 	@Override
@@ -189,7 +189,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	 * if the list contained more than one expression.
 	 */
 	private Expression listToSeqExp(List<Expression> exprs) {
-		if (exprs.isEmpty()) return new ValueExpr(new NullVal());
+		if (exprs.isEmpty()) return new ValueExpr(new UnitVal());
 		Expression exp = exprs.get(0);
 		for (int i=1; i<exprs.size(); i++) {
 			exp = new SeqExpr(exp, exprs.get(i));
