@@ -131,30 +131,6 @@ class IfExpr implements Expression {
 }
 
 /**
- * While statements (treated as expressions in FWJS, unlike JS).
- */
-class WhileExpr implements Expression {
-    private Expression cond;
-    private Expression body;
-    public WhileExpr(Expression cond, Expression body) {
-        this.cond = cond;
-        this.body = body;
-    }
-    public Value evaluate(Environment env) {
-        Value v = this.cond.evaluate(env);
-        if (!(v instanceof BoolVal))
-            throw new RuntimeException("Expected boolean, but got " + v);
-        boolean b = ((BoolVal) v).toBoolean();
-        if (b) {
-            this.body.evaluate(env);
-            return this.evaluate(env);
-        } else {
-            return new UnitVal();
-        }
-    }
-}
-
-/**
  * Sequence expressions (i.e. several back-to-back expressions).
  */
 class SeqExpr implements Expression {
