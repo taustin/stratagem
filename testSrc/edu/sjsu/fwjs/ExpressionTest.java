@@ -68,16 +68,6 @@ public class ExpressionTest {
     }
 
     @Test
-    public void testAssignExpr() {
-        Environment env = new Environment();
-        IntVal inVal = new IntVal(42);
-        AssignExpr ae = new AssignExpr("x", new ValueExpr(inVal));
-        IntVal iv = (IntVal) ae.evaluate(env);
-        assertEquals(inVal, iv);
-        assertEquals(inVal, env.resolveVar("x"));
-    }
-
-    @Test
     public void testBinOpExpr() {
         Environment env = new Environment();
         BinOpExpr boe = new BinOpExpr(Op.ADD,
