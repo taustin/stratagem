@@ -90,21 +90,6 @@ public class ExpressionTest {
     }
 
     @Test
-    public void testWhileExpr() {
-        Environment env = new Environment();
-        env.updateVar("x", new IntVal(10));
-        WhileExpr we = new WhileExpr(new BinOpExpr(Op.GT,
-                    new VarExpr("x"),
-                    new ValueExpr(new IntVal(0))),
-                new AssignExpr("x",
-                        new BinOpExpr(Op.SUBTRACT,
-                                new VarExpr("x"),
-                                new ValueExpr(new IntVal(1)))));
-        we.evaluate(env);
-        assertEquals(new IntVal(0), env.resolveVar("x"));
-    }
-
-    @Test
     // (function(x) { x; })(321);
     public void testIdFunction() {
         Environment env = new Environment();
