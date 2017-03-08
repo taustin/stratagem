@@ -134,14 +134,14 @@ class IfExpr implements Expression {
  * Sequence expressions (i.e. several back-to-back expressions).
  */
 class SeqExpr implements Expression {
-    private static Expression[] arrayTypeHint = new Expression[0];
+    private static final Expression[] expressionArrayHint = new Expression[0];
 
     private Expression[] exprs;
     public SeqExpr(Expression[] exprs) {
         this.exprs = exprs;
     }
     public SeqExpr(List<Expression> exprs) {
-        this.exprs = exprs.toArray(arrayTypeHint);
+        this.exprs = exprs.toArray(expressionArrayHint);
     }
     public Value evaluate(Environment env) {
         Value value = new UnitVal();
@@ -156,10 +156,16 @@ class SeqExpr implements Expression {
  * A function declaration, which evaluates to a closure.
  */
 class FunctionDeclExpr implements Expression {
-    private List<String> params;
+    private static final String[] stringArrayHint = new String[0];
+
+    private String[] params;
     private Expression body;
-    public FunctionDeclExpr(List<String> params, Expression body) {
+    public FunctionDeclExpr(String[] params, Expression body) {
         this.params = params;
+        this.body = body;
+    }
+    public FunctionDeclExpr(List<String> params, Expression body) {
+        this.params = params.toArray(stringArrayHint);
         this.body = body;
     }
     public Value evaluate(Environment env) {
@@ -171,11 +177,17 @@ class FunctionDeclExpr implements Expression {
  * Function application.
  */
 class FunctionAppExpr implements Expression {
+    private static final Expression[] expressionArrayHint = new Expression[0];
+
     private Expression f;
-    private List<Expression> args;
-    public FunctionAppExpr(Expression f, List<Expression> args) {
+    private Expression[] args;
+    public FunctionAppExpr(Expression f, Expression[] args) {
         this.f = f;
         this.args = args;
+    }
+    public FunctionAppExpr(Expression f, List<Expression> args) {
+        this.f = f;
+        this.args = args.toArray(expressionArrayHint);
     }
     public Value evaluate(Environment env) {
         ClosureVal closure = (ClosureVal) f.evaluate(env);

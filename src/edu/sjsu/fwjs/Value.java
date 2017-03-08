@@ -83,23 +83,30 @@ class UnitVal implements Value {
  * Note that a closure remembers its surrounding scope.
  */
 class ClosureVal implements Value {
-    private List<String> params;
+    private static final String[] stringArrayHint = new String[0];
+
+    private String[] params;
     private Expression body;
     private Environment outerEnv;
     /**
      * The environment is the environment where the function was created.
      * This design is what makes this expression a closure.
      */
-    public ClosureVal(List<String> params, Expression body, Environment env) {
+    public ClosureVal(String[] params, Expression body, Environment env) {
         this.params = params;
+        this.body = body;
+        this.outerEnv = env;
+    }
+    public ClosureVal(List<String> params, Expression body, Environment env) {
+        this.params = params.toArray(stringArrayHint);
         this.body = body;
         this.outerEnv = env;
     }
     public String toString() {
         String s = "function(";
         String sep = "";
-        for (int i=0; i<params.size(); i++) {
-            s += sep + params.get(i);
+        for (String param : params) {
+            s += sep + param;
             sep = ",";
         }
         s += ") {...};";
@@ -111,9 +118,10 @@ class ClosureVal implements Value {
      * be bound to its matching argument and added to the new local environment.
      */
     public Value apply(List<Value> argVals) {
+        assert argVals.size() == params.length;
         Environment newEnv = new Environment(outerEnv);
         for (int i=0; i<argVals.size(); i++) {
-            String varName = params.get(i);
+            String varName = params[i];
             Value v = argVals.get(i);
             newEnv.createVar(varName, v);
         }
