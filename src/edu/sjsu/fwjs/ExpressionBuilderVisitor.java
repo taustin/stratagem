@@ -149,14 +149,20 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 
 	@Override
 	public Expression visitInt(FeatherweightJavaScriptParser.IntContext ctx) {
-		int val = Integer.valueOf(ctx.INT().getText());
+		int val = Integer.valueOf(ctx.LIT_INT().getText());
 		return new ValueExpr(new IntVal(val));
 	}
 
 	@Override
 	public Expression visitBool(FeatherweightJavaScriptParser.BoolContext ctx) {
-		boolean val = Boolean.valueOf(ctx.BOOL().getText());
+		boolean val = Boolean.valueOf(ctx.LIT_BOOL().getText());
 		return new ValueExpr(new BoolVal(val));
+	}
+
+	@Override
+	public Expression visitString(FeatherweightJavaScriptParser.StringContext ctx) {
+		String val = ctx.LIT_STRING().getText();
+		return new ValueExpr(new StringVal(val));
 	}
 
 	@Override
