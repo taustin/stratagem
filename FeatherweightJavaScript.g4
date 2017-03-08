@@ -51,7 +51,8 @@ WS            : [ \t]+ -> skip ; // ignore whitespace
 /** The start rule */
 prog: expr+ ;
 
-expr: expr args                                         # functionApp
+expr: expr SEPARATOR expr                               # bare
+    | expr args                                         # functionApp
     | FUNCTION params ':' type '{' expr* '}'            # functionDecl
     | LIT_INT                                           # int
     | LIT_BOOL                                          # bool

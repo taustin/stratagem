@@ -18,12 +18,6 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitPrintExpr(FeatherweightJavaScriptParser.PrintExprContext ctx) {
-		Expression exp = visit(ctx.expr());
-		return new PrintExpr(exp);
-	}
-
-	@Override
 	public Expression visitBareExpr(FeatherweightJavaScriptParser.BareExprContext ctx) {
 		return visit(ctx.expr());
 	}
