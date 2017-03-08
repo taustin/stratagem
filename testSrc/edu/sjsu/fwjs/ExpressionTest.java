@@ -81,9 +81,9 @@ public class ExpressionTest {
     public void testSeqExpr() {
         Environment env = new Environment();
         SeqExpr se = new SeqExpr(new Expression[] {
-                new AssignExpr("x", new ValueExpr(new IntVal(2))),
+                new ValueExpr(new IntVal(2)),
                 new BinOpExpr(Op.MULTIPLY,
-                        new VarExpr("x"),
+                        new ValueExpr(new IntVal(2)),
                         new ValueExpr(new IntVal(3)))
         });
         assertEquals(new IntVal(6), se.evaluate(env));
