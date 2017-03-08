@@ -172,9 +172,14 @@ class WhileExpr implements Expression {
  * Sequence expressions (i.e. several back-to-back expressions).
  */
 class SeqExpr implements Expression {
-    private List<Expression> exprs;
-    public SeqExpr(List<Expression> exprs) {
+    private static Expression[] arrayTypeHint = new Expression[0];
+
+    private Expression[] exprs;
+    public SeqExpr(Expression[] exprs) {
         this.exprs = exprs;
+    }
+    public SeqExpr(List<Expression> exprs) {
+        this.exprs = exprs.toArray(arrayTypeHint);
     }
     public Value evaluate(Environment env) {
         Value value = new UnitVal();
