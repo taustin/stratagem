@@ -23,18 +23,11 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitIfThenElse(FeatherweightJavaScriptParser.IfThenElseContext ctx) {
+	public Expression visitIf(FeatherweightJavaScriptParser.IfContext ctx) {
 		Expression cond = visit(ctx.expr());
-		Expression thn = visit(ctx.block(0));
-		Expression els = visit(ctx.block(1));
+		Expression thn = visit(ctx.seq(0));
+		Expression els = visit(ctx.seq(1));
 		return new IfExpr(cond, thn, els);
-	}
-
-	@Override
-	public Expression visitIfThen(FeatherweightJavaScriptParser.IfThenContext ctx) {
-		Expression cond = visit(ctx.expr());
-		Expression thn = visit(ctx.block());
-		return new IfExpr(cond, thn, new ValueExpr(new UnitVal()));
 	}
 
 	@Override
