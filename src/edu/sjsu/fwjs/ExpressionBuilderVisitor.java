@@ -133,17 +133,18 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitVarDecl(FeatherweightJavaScriptParser.VarDeclContext ctx) {
+	public Expression visitLet(FeatherweightJavaScriptParser.LetContext ctx) {
 		String id = ctx.ID().getText();
-		Expression exp = visit(ctx.expr());
-		return new VarDeclExpr(id, exp);
-	}
+		Expression value = visit(ctx.expr(0));
+		Expression next = visit(ctx.expr(1));
 
-	@Override
-	public Expression visitAssign(FeatherweightJavaScriptParser.AssignContext ctx) {
-		String id = ctx.ID().getText();
-		Expression exp = visit(ctx.expr());
-		return new AssignExpr(id, exp);
+		List<String> params = new ArrayList<>();
+		params.add(id);
+		FunctionDeclExpr implicitDecl = new FunctionDeclExpr(params, next);
+
+		List<Expression> args = new ArrayList<>();
+		args.add(value);
+		return new FunctionAppExpr(implicitDecl, args);
 	}
 
 	@Override
