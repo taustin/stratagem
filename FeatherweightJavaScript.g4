@@ -63,7 +63,7 @@ expr: expr args                                         # functionApp
     | LIT_UNIT                                          # unit
     | ID                                                # id
     | IF '(' expr ')' '{' seq '}' ELSE '{' seq '}'      # if
-    | LET ID '=' expr 'in' expr                         # let
+    | LET ID ':' type '=' expr 'in' expr                # let
     | expr op=( MUL | DIV | MOD ) expr                  # MulDivMod
     | expr op=( ADD | SUB ) expr                        # AddSub
     | expr op=( GT | GE | LT | LE | EQ | NE ) expr      # Comparison
