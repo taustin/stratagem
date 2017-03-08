@@ -121,74 +121,69 @@ public class ExpressionTest {
     }
 
     @Test
-    // x=112358; (function() { x; })();
-    public void testOuterScope() {
+    // fn(name: String) { fn(unused: String) { name }("Bob") }("Alice")
+    public void testScope1() {
+        StringVal alice = new StringVal("Alice");
+        StringVal bob = new StringVal("Bob");
+
         Environment env = new Environment();
-        VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
-        FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<>(),
-                new VarExpr("x"));
-        SeqExpr seq = new SeqExpr(new Expression[] {
-                newVar,
-                new FunctionAppExpr(f, new ArrayList<>())
-        });
-        Value v = seq.evaluate(env);
-        assertEquals(new IntVal(112358), v);
+        FunctionDeclExpr innerDecl = new FunctionDeclExpr(
+                new String[] {"unused"},
+                new VarExpr("name"));
+        FunctionDeclExpr outerDecl = new FunctionDeclExpr(
+                new String[] {"name"},
+                new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
+
+        FunctionAppExpr outerApp = new FunctionAppExpr(
+                outerDecl,
+                new Expression[] { new ValueExpr(alice) });
+        Value v = outerApp.evaluate(env);
+        assertEquals(v, alice);
     }
 
     @Test
-    // x=112358; (function() { var x=42; x; })();
-    public void testScope() {
-        Environment env = new Environment();
-        VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
-        FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<>(),
-                new SeqExpr(new Expression[]{
-                        new VarDeclExpr("x", new ValueExpr(new IntVal(42))),
-                        new VarExpr("x")
-                }));
-        SeqExpr seq = new SeqExpr(new Expression[]{
-                newVar,
-                new FunctionAppExpr(f, new ArrayList<>())
-        });
-        Value v = seq.evaluate(env);
-        assertEquals(new IntVal(42), v);
-    }
-
-    @Test
-    // x=112358; (function() { var x=42; x; })(); x;
+    // fn(name: String) { fn(name: String) { name }("Bob") }("Alice")
     public void testScope2() {
+        StringVal alice = new StringVal("Alice");
+        StringVal bob = new StringVal("Bob");
+
         Environment env = new Environment();
-        VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
-        FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<>(),
-                new SeqExpr(new Expression[]{
-                        new VarDeclExpr("x", new ValueExpr(new IntVal(42))),
-                        new VarExpr("x")
-                }));
-        SeqExpr seq = new SeqExpr(new Expression[] {
-                newVar,
-                new FunctionAppExpr(f, new ArrayList<>()),
-                new VarExpr("x")
-        });
-        Value v = seq.evaluate(env);
-        assertEquals(new IntVal(112358), v);
+        FunctionDeclExpr innerDecl = new FunctionDeclExpr(
+                new String[] {"name"},
+                new VarExpr("name"));
+        FunctionDeclExpr outerDecl = new FunctionDeclExpr(
+                new String[] {"name"},
+                new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
+
+        FunctionAppExpr outerApp = new FunctionAppExpr(
+                outerDecl,
+                new Expression[] { new ValueExpr(alice) });
+        Value v = outerApp.evaluate(env);
+        assertEquals(v, bob);
     }
 
     @Test
-    // x=112358; (function() { x=42; x; })(); x;
+    // fn(name: String) { fn(name: String) { name }("Bob"); name }("Alice")
     public void testScope3() {
+        StringVal alice = new StringVal("Alice");
+        StringVal bob = new StringVal("Bob");
+
         Environment env = new Environment();
-        VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
-        FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<>(),
-                new SeqExpr(new Expression[]{
-                        new AssignExpr("x", new ValueExpr(new IntVal(42))),
-                        new VarExpr("x")
+        FunctionDeclExpr innerDecl = new FunctionDeclExpr(
+                new String[] {"name"},
+                new VarExpr("name"));
+        FunctionDeclExpr outerDecl = new FunctionDeclExpr(
+                new String[] {"name"},
+                new SeqExpr(new Expression[] {
+                        new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }),
+                        new VarExpr("name")
                 }));
-        SeqExpr seq = new SeqExpr(new Expression[] {
-                newVar,
-                new FunctionAppExpr(f, new ArrayList<>()),
-                new VarExpr("x")
-        });
-        Value v = seq.evaluate(env);
-        assertEquals(new IntVal(42), v);
+
+        FunctionAppExpr outerApp = new FunctionAppExpr(
+                outerDecl,
+                new Expression[] { new ValueExpr(alice) });
+        Value v = outerApp.evaluate(env);
+        assertEquals(v, alice);
     }
 
     @Test
