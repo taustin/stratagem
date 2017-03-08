@@ -1,0 +1,6 @@
+.idea
+lib
+.DS_Store
+build
+parseTrees
+generatedSrc
