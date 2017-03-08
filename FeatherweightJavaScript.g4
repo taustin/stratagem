@@ -51,22 +51,22 @@ WS            : [ \t]+ -> skip ; // ignore whitespace
 // ***Paring rules ***
 
 /** The start rule */
-prog: expr+ ;
+prog: seq ;
 
-expr: expr SEPARATOR expr                               # bare
-    | expr args                                         # functionApp
-    | FUNCTION params ':' type '{' expr* '}'            # functionDecl
+seq: expr (SEPARATOR expr)* ;
+
+expr: expr args                                         # functionApp
+    | FUNCTION params ':' type '{' seq '}'              # functionDecl
     | LIT_INT                                           # int
     | LIT_BOOL                                          # bool
     | LIT_STRING                                        # string
     | LIT_UNIT                                          # unit
     | ID                                                # id
-    | IF '(' expr ')' '{' expr* '}' ELSE '{' expr* '}'  # if
+    | IF '(' expr ')' '{' seq '}' ELSE '{' seq '}'      # if
     | LET ID '=' expr 'in' expr                         # let
     | expr op=( MUL | DIV | MOD ) expr                  # MulDivMod
     | expr op=( ADD | SUB ) expr                        # AddSub
     | expr op=( GT | GE | LT | LE | EQ | NE ) expr      # Comparison
-    | SEPARATOR                                         # blank
     ;
 
 params: '(' ID ':' type ')'
