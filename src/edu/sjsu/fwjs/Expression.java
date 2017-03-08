@@ -177,23 +177,6 @@ class SeqExpr implements Expression {
 }
 
 /**
- * Declaring a variable in the local scope.
- */
-class VarDeclExpr implements Expression {
-    private String varName;
-    private Expression exp;
-    public VarDeclExpr(String varName, Expression exp) {
-        this.varName = varName;
-        this.exp = exp;
-    }
-    public Value evaluate(Environment env) {
-        Value v = exp.evaluate(env);
-        env.createVar(varName, v);
-        return v;
-    }
-}
-
-/**
  * A function declaration, which evaluates to a closure.
  */
 class FunctionDeclExpr implements Expression {
