@@ -38,13 +38,6 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitWhile(FeatherweightJavaScriptParser.WhileContext ctx) {
-		Expression cond = visit(ctx.expr());
-		Expression body = visit(ctx.block());
-		return new WhileExpr(cond, body);
-	}
-
-	@Override
 	public Expression visitMulDivMod(FeatherweightJavaScriptParser.MulDivModContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
