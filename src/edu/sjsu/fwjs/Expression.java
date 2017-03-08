@@ -43,20 +43,6 @@ class VarExpr implements Expression {
 }
 
 /**
- * A print expression.
- */
-class PrintExpr implements Expression {
-    private Expression exp;
-    public PrintExpr(Expression exp) {
-        this.exp = exp;
-    }
-    public Value evaluate(Environment env) {
-        Value v = exp.evaluate(env);
-        System.out.println(v.toString());
-        return v;
-    }
-}
-/**
  * Binary operators (+, -, *, etc).
  * Currently only numbers are supported.
  */
