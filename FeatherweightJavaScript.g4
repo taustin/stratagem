@@ -9,18 +9,19 @@ IF       : 'if' ;
 ELSE     : 'else' ;
 LET      : 'let' ;
 
+// Both a type and a literal
+UNIT      : '()' ;
+
 // Types
 TYPE_INT       : 'Int' ;
 TYPE_BOOL      : 'Bool' ;
 TYPE_STRING    : 'String' ;
 TYPE_FUN       : '->' ;
-TYPE_UNIT      : '()' ;
 
 // Literals
 LIT_INT    : [1-9][0-9]* | '0' ;
 LIT_BOOL   : 'true' | 'false' ;
 LIT_STRING : '"' ( [^"] | '\\"' )* '"' ;
-LIT_UNIT   : '()' ;
 
 // Binary operators
 MUL       : '*' ;
@@ -60,7 +61,7 @@ expr: expr args                                         # functionApp
     | LIT_INT                                           # int
     | LIT_BOOL                                          # bool
     | LIT_STRING                                        # string
-    | LIT_UNIT                                          # unit
+    | UNIT                                              # unit
     | ID                                                # id
     | IF '(' expr ')' '{' seq '}' ELSE '{' seq '}'      # if
     | LET ID ':' type '=' expr 'in' expr                # let
@@ -75,7 +76,7 @@ params: '(' ID ':' type ')'
 args: '(' expr ')'
     ;
 
-type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | TYPE_UNIT ;
+type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | UNIT ;
 
 type_fun  : type_prim TYPE_FUN type ;
 
