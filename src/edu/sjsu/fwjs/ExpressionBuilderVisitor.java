@@ -16,18 +16,18 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		}
 		return listToSeqExp(stmts);
 	}
-	
+
 	@Override
 	public Expression visitPrintExpr(FeatherweightJavaScriptParser.PrintExprContext ctx) {
 		Expression exp = visit(ctx.expr());
 		return new PrintExpr(exp);
 	}
-	
+
 	@Override
 	public Expression visitBareExpr(FeatherweightJavaScriptParser.BareExprContext ctx) {
 		return visit(ctx.expr());
 	}
-	
+
 	@Override
 	public Expression visitIfThenElse(FeatherweightJavaScriptParser.IfThenElseContext ctx) {
 		Expression cond = visit(ctx.expr());
@@ -35,14 +35,14 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		Expression els = visit(ctx.block(1));
 		return new IfExpr(cond, thn, els);
 	}
-	
+
 	@Override
 	public Expression visitIfThen(FeatherweightJavaScriptParser.IfThenContext ctx) {
 		Expression cond = visit(ctx.expr());
 		Expression thn = visit(ctx.block());
 		return new IfExpr(cond, thn, new ValueExpr(new NullVal()));
 	}
-	
+
 	@Override
 	public Expression visitWhile(FeatherweightJavaScriptParser.WhileContext ctx) {
 		Expression cond = visit(ctx.expr());
@@ -56,21 +56,21 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
 	}
-	
+
 	@Override
 	public Expression visitAddSub(FeatherweightJavaScriptParser.AddSubContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
 	}
-	
+
 	@Override
 	public Expression visitComparison(FeatherweightJavaScriptParser.ComparisonContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
 	}
-	
+
 	/**
 	 * Converts binops from parser to binops from  interpreter,
 	 * and then build a BinOpExpr.
@@ -111,7 +111,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		}
 		return new BinOpExpr(op, lhs, rhs);
 	}
-	
+
 	@Override
 	public Expression visitFunctionApp(FeatherweightJavaScriptParser.FunctionAppContext ctx) {
 		Expression f = visit(ctx.expr());
@@ -122,7 +122,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		}
 		return new FunctionAppExpr(f, args);
 	}
-	
+
 	@Override
 	public Expression visitFunctionDecl(FeatherweightJavaScriptParser.FunctionDeclContext ctx) {
 		List<String> params = new ArrayList<String>();
@@ -137,14 +137,14 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		Expression body = listToSeqExp(exprList);
 		return new FunctionDeclExpr(params, body);
 	}
-	
+
 	@Override
 	public Expression visitVarDecl(FeatherweightJavaScriptParser.VarDeclContext ctx) {
 		String id = ctx.ID().getText();
 		Expression exp = visit(ctx.expr());
 		return new VarDeclExpr(id, exp);
 	}
-	
+
 	@Override
 	public Expression visitAssign(FeatherweightJavaScriptParser.AssignContext ctx) {
 		String id = ctx.ID().getText();
@@ -157,18 +157,18 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		int val = Integer.valueOf(ctx.INT().getText());
 		return new ValueExpr(new IntVal(val));
 	}
-	
+
 	@Override
 	public Expression visitBool(FeatherweightJavaScriptParser.BoolContext ctx) {
 		boolean val = Boolean.valueOf(ctx.BOOL().getText());
 		return new ValueExpr(new BoolVal(val));
 	}
-	
+
 	@Override
 	public Expression visitNull(FeatherweightJavaScriptParser.NullContext ctx) {
 		return new ValueExpr(new NullVal());
 	}
-	
+
 	@Override
 	public Expression visitId(FeatherweightJavaScriptParser.IdContext ctx) {
 		String id = ctx.ID().getText();
@@ -179,7 +179,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	public Expression visitParens(FeatherweightJavaScriptParser.ParensContext ctx) {
 		return visit(ctx.expr());
 	}
-	
+
 	@Override
 	public Expression visitFullBlock(FeatherweightJavaScriptParser.FullBlockContext ctx) {
 		List<Expression> stmts = new ArrayList<Expression>();
@@ -189,7 +189,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		}
 		return listToSeqExp(stmts);
 	}
-	
+
 	/**
 	 * Converts a list of expressions to one sequence expression,
 	 * if the list contained more than one expression.
