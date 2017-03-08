@@ -159,11 +159,6 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitParens(FeatherweightJavaScriptParser.ParensContext ctx) {
-		return visit(ctx.expr());
-	}
-
-	@Override
 	public Expression visitFullBlock(FeatherweightJavaScriptParser.FullBlockContext ctx) {
 		List<Expression> stmts = new ArrayList<Expression>();
 		for (int i=1; i<ctx.getChildCount()-1; i++) {
