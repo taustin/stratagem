@@ -9,18 +9,17 @@ import edu.sjsu.fwjs.parser.FeatherweightJavaScriptParser;
 public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor<Expression>{
 	@Override
 	public Expression visitProg(FeatherweightJavaScriptParser.ProgContext ctx) {
-		List<Expression> exprs = new ArrayList<Expression>();
+		return visit(ctx.seq());
+	}
+
+	@Override
+	public Expression visitSeq(FeatherweightJavaScriptParser.SeqContext ctx) {
+		List<Expression> exprs = new ArrayList<>();
 		for (int i=0; i<ctx.expr().size(); i++) {
 			Expression exp = visit(ctx.expr(i));
 			if (exp != null) exprs.add(exp);
 		}
-		return listToSeqExp(exprs);
-	}
-
-	@Override
-	public Expression visitBare(FeatherweightJavaScriptParser.BareContext ctx) {
-		visit(ctx.expr(0));
-		return visit(ctx.expr(1));
+		return new SeqExpr(exprs);
 	}
 
 	@Override
@@ -193,19 +192,6 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 			stmts.add(exp);
 		}
 		return listToSeqExp(stmts);
-	}
-
-	/**
-	 * Converts a list of expressions to one sequence expression,
-	 * if the list contained more than one expression.
-	 */
-	private Expression listToSeqExp(List<Expression> exprs) {
-		if (exprs.isEmpty()) return new ValueExpr(new UnitVal());
-		Expression exp = exprs.get(0);
-		for (int i=1; i<exprs.size(); i++) {
-			exp = new SeqExpr(exp, exprs.get(i));
-		}
-		return exp;
 	}
 
 	@Override

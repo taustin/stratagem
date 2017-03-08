@@ -1,9 +1,7 @@
 package edu.sjsu.fwjs;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * FWJS expressions.
@@ -171,18 +169,19 @@ class WhileExpr implements Expression {
 }
 
 /**
- * Sequence expressions (i.e. 2 back-to-back expressions).
+ * Sequence expressions (i.e. several back-to-back expressions).
  */
 class SeqExpr implements Expression {
-    private Expression e1;
-    private Expression e2;
-    public SeqExpr(Expression e1, Expression e2) {
-        this.e1 = e1;
-        this.e2 = e2;
+    private List<Expression> exprs;
+    public SeqExpr(List<Expression> exprs) {
+        this.exprs = exprs;
     }
     public Value evaluate(Environment env) {
-        e1.evaluate(env);
-        return e2.evaluate(env);
+        Value value = new UnitVal();
+        for (Expression e : exprs) {
+            value = e.evaluate(env);
+        }
+        return value;
     }
 }
 
