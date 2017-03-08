@@ -102,6 +102,9 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 		case FeatherweightJavaScriptParser.EQ:
 			op = Op.EQ;
 			break;
+		case FeatherweightJavaScriptParser.NE:
+			op = Op.NE;
+			break;
 		}
 		return new BinOpExpr(op, lhs, rhs);
 	}

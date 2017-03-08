@@ -81,6 +81,8 @@ class BinOpExpr implements Expression {
         switch (op) {
         case EQ:
             return new BoolVal(v1.equals(v2));
+        case NE:
+            return new BoolVal(!v1.equals(v2));
         case ADD:
             // Specifically skipping cases where we have two numbers
             if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
