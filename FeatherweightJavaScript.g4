@@ -4,19 +4,23 @@ grammar FeatherweightJavaScript;
 @header { package edu.sjsu.fwjs.parser; }
 
 // Reserved words
-IF        : 'if' ;
-ELSE      : 'else' ;
-WHILE     : 'while' ;
-FUNCTION  : 'function' ;
-VAR       : 'var' ;
-PRINT     : 'print' ;
+FUNCTION : 'fn' ;
+IF       : 'if' ;
+ELSE     : 'else' ;
+LET      : 'let' ;
+
+// Types
+TYPE_INT       : 'Int' ;
+TYPE_BOOL      : 'Bool' ;
+TYPE_STRING    : 'String' ;
+TYPE_FUN       : '->' ;
 
 // Literals
-INT       : [1-9][0-9]* | '0' ;
-BOOL      : 'true' | 'false' ;
-NULL      : 'null' ;
+LIT_INT    : [1-9][0-9]* | '0' ;
+LIT_BOOL   : 'true' | 'false' ;
+LIT_STRING : '"' ( [^"] | '\\"' )* '"' ;
 
-// Symbols
+// Binary operators
 MUL       : '*' ;
 DIV       : '/' ;
 ADD       : '+' ;
@@ -27,14 +31,16 @@ GE        : '>=' ;
 LT        : '<' ;
 LE        : '<=' ;
 EQ        : '==' ;
+NE        : '!=' ;
+
 SEPARATOR : ';' ;
 
 // Identifiers
-ID        : [a-zA-Z_] [a-zA-Z0-9_]* ;
+ID : [a-zA-Z_] [a-zA-Z0-9_]* ;
 
 
 // Whitespace and comments
-NEWLINE   : '\r'? '\n' -> skip ;
+NEWLINE       : '\r'? '\n' -> skip ;
 BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
 LINE_COMMENT  : '//' ~[\n\r]* -> skip ;
 WS            : [ \t]+ -> skip ; // ignore whitespace
@@ -43,43 +49,30 @@ WS            : [ \t]+ -> skip ; // ignore whitespace
 // ***Paring rules ***
 
 /** The start rule */
-prog: stat+ ;
+prog: expr+ ;
 
-stat: expr SEPARATOR                                    # bareExpr
-    | IF '(' expr ')' block ELSE block                  # ifThenElse
-    | IF '(' expr ')' block                             # ifThen
-    | WHILE '(' expr ')' block                          # while
-    | PRINT '(' expr ')' SEPARATOR                      # printExpr
+expr: expr args                                         # functionApp
+    | FUNCTION params ':' type '{' expr* '}'            # functionDecl
+    | LIT_INT                                           # int
+    | LIT_BOOL                                          # bool
+    | LIT_STRING                                        # string
+    | ID                                                # id
+    | IF '(' expr ')' '{' expr* '}' ELSE '{' expr* '}'  # if
+    | LET ID '=' expr 'in' expr                         # let
+    | expr op=( MUL | DIV | MOD ) expr                  # MulDivMod
+    | expr op=( ADD | SUB ) expr                        # AddSub
+    | expr op=( GT | GE | LT | LE | EQ | NE ) expr      # Comparison
     | SEPARATOR                                         # blank
     ;
 
-expr: expr args                                         # functionApp
-    | FUNCTION params '{' stat* '}'                     # functionDecl
-    | expr op=( '*' | '/' | '%' ) expr                  # MulDivMod
-    | expr op=( '+' | '-' ) expr                        # AddSub
-    | expr op=( '<' | '<=' | '>' | '>=' | '==' ) expr   # Comparison
-    | VAR ID '=' expr                                   # varDecl
-    | ID '=' expr                                       # assign
-    | INT                                               # int
-    | BOOL                                              # bool
-    | NULL                                              # null
-    | ID                                                # id
-    | '(' expr ')'                                      # parens
-    ;
-
-block: '{' stat* '}'                                    # fullBlock
-     | stat                                             # simpBlock
-     ;
-
-params: '(' ')'
-      | '(' ID (',' ID)* ')'
+params: '(' ID ':' type ')'
       ;
 
-args: '(' ')'
-    | '(' expr (',' expr)* ')'
+args: '(' expr ')'
     ;
 
-objLit: '{' (ID ':' expr)* '}'
-       ;
+type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING ;
 
+type_fun  : type_prim TYPE_FUN type ;
 
+type      : type_prim | type_fun ;
