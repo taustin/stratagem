@@ -14,11 +14,13 @@ TYPE_INT       : 'Int' ;
 TYPE_BOOL      : 'Bool' ;
 TYPE_STRING    : 'String' ;
 TYPE_FUN       : '->' ;
+TYPE_UNIT      : '()' ;
 
 // Literals
 LIT_INT    : [1-9][0-9]* | '0' ;
 LIT_BOOL   : 'true' | 'false' ;
 LIT_STRING : '"' ( [^"] | '\\"' )* '"' ;
+LIT_UNIT   : '()' ;
 
 // Binary operators
 MUL       : '*' ;
@@ -57,6 +59,7 @@ expr: expr SEPARATOR expr                               # bare
     | LIT_INT                                           # int
     | LIT_BOOL                                          # bool
     | LIT_STRING                                        # string
+    | LIT_UNIT                                          # unit
     | ID                                                # id
     | IF '(' expr ')' '{' expr* '}' ELSE '{' expr* '}'  # if
     | LET ID '=' expr 'in' expr                         # let
@@ -72,7 +75,7 @@ params: '(' ID ':' type ')'
 args: '(' expr ')'
     ;
 
-type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING ;
+type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | TYPE_UNIT ;
 
 type_fun  : type_prim TYPE_FUN type ;
 
