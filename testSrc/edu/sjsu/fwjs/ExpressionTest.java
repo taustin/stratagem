@@ -3,9 +3,7 @@ package edu.sjsu.fwjs;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 
@@ -66,7 +64,7 @@ public class ExpressionTest {
         try {
             ife.evaluate(env);
             fail();
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
     }
 
     @Test
@@ -92,10 +90,12 @@ public class ExpressionTest {
     @Test
     public void testSeqExpr() {
         Environment env = new Environment();
-        SeqExpr se = new SeqExpr(new AssignExpr("x", new ValueExpr(new IntVal(2))),
+        SeqExpr se = new SeqExpr(new Expression[] {
+                new AssignExpr("x", new ValueExpr(new IntVal(2))),
                 new BinOpExpr(Op.MULTIPLY,
                         new VarExpr("x"),
-                        new ValueExpr(new IntVal(3))));
+                        new ValueExpr(new IntVal(3)))
+        });
         assertEquals(new IntVal(6), se.evaluate(env));
     }
 
@@ -118,10 +118,10 @@ public class ExpressionTest {
     // (function(x) { x; })(321);
     public void testIdFunction() {
         Environment env = new Environment();
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         params.add("x");
         FunctionDeclExpr f = new FunctionDeclExpr(params, new VarExpr("x"));
-        List<Expression> args = new ArrayList<Expression>();
+        List<Expression> args = new ArrayList<>();
         args.add(new ValueExpr(new IntVal(321)));
         FunctionAppExpr app = new FunctionAppExpr(f,args);
         assertEquals(new IntVal(321), app.evaluate(env));
@@ -152,7 +152,10 @@ public class ExpressionTest {
         VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
         FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<String>(),
                 new VarExpr("x"));
-        SeqExpr seq = new SeqExpr(newVar, new FunctionAppExpr(f, new ArrayList<Expression>()));
+        SeqExpr seq = new SeqExpr(new Expression[] {
+                newVar,
+                new FunctionAppExpr(f, new ArrayList<Expression>())
+        });
         Value v = seq.evaluate(env);
         assertEquals(new IntVal(112358), v);
     }
@@ -163,9 +166,14 @@ public class ExpressionTest {
         Environment env = new Environment();
         VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
         FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<String>(),
-                new SeqExpr(new VarDeclExpr("x", new ValueExpr(new IntVal(42))),
-                        new VarExpr("x")));
-        SeqExpr seq = new SeqExpr(newVar, new FunctionAppExpr(f, new ArrayList<Expression>()));
+                new SeqExpr(new Expression[]{
+                        new VarDeclExpr("x", new ValueExpr(new IntVal(42))),
+                        new VarExpr("x")
+                }));
+        SeqExpr seq = new SeqExpr(new Expression[]{
+                newVar,
+                new FunctionAppExpr(f, new ArrayList<Expression>())
+        });
         Value v = seq.evaluate(env);
         assertEquals(new IntVal(42), v);
     }
@@ -176,11 +184,15 @@ public class ExpressionTest {
         Environment env = new Environment();
         VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
         FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<String>(),
-                new SeqExpr(new VarDeclExpr("x", new ValueExpr(new IntVal(42))),
-                        new VarExpr("x")));
-        SeqExpr seq = new SeqExpr(new SeqExpr(newVar,
-                new FunctionAppExpr(f, new ArrayList<Expression>())),
-                new VarExpr("x"));
+                new SeqExpr(new Expression[]{
+                        new VarDeclExpr("x", new ValueExpr(new IntVal(42))),
+                        new VarExpr("x")
+                }));
+        SeqExpr seq = new SeqExpr(new Expression[] {
+                newVar,
+                new FunctionAppExpr(f, new ArrayList<Expression>()),
+                new VarExpr("x")
+        });
         Value v = seq.evaluate(env);
         assertEquals(new IntVal(112358), v);
     }
@@ -191,11 +203,15 @@ public class ExpressionTest {
         Environment env = new Environment();
         VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(112358)));
         FunctionDeclExpr f = new FunctionDeclExpr(new ArrayList<String>(),
-                new SeqExpr(new AssignExpr("x", new ValueExpr(new IntVal(42))),
-                        new VarExpr("x")));
-        SeqExpr seq = new SeqExpr(new SeqExpr(newVar,
-                new FunctionAppExpr(f, new ArrayList<Expression>())),
-                new VarExpr("x"));
+                new SeqExpr(new Expression[]{
+                        new AssignExpr("x", new ValueExpr(new IntVal(42))),
+                        new VarExpr("x")
+                }));
+        SeqExpr seq = new SeqExpr(new Expression[] {
+                newVar,
+                new FunctionAppExpr(f, new ArrayList<Expression>()),
+                new VarExpr("x")
+        });
         Value v = seq.evaluate(env);
         assertEquals(new IntVal(42), v);
     }
@@ -206,9 +222,12 @@ public class ExpressionTest {
         Environment env = new Environment();
         VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(99)));
         try {
-            (new SeqExpr(newVar, newVar)).evaluate(env);
+            new SeqExpr(new Expression[] {
+                newVar,
+                newVar
+            }).evaluate(env);
             fail();
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
     }
 
     @Test
