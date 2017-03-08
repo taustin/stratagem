@@ -192,20 +192,6 @@ public class ExpressionTest {
     }
 
     @Test
-    // var x=99; var x=99;  /* should throw an error */
-    public void testVarDecl() {
-        Environment env = new Environment();
-        VarDeclExpr newVar = new VarDeclExpr("x", new ValueExpr(new IntVal(99)));
-        try {
-            new SeqExpr(new Expression[] {
-                newVar,
-                newVar
-            }).evaluate(env);
-            fail();
-        } catch (Exception ignored) {}
-    }
-
-    @Test
     // "no" + "table"
     public void testStringAppend() {
         Environment env = new Environment();
