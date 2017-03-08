@@ -208,25 +208,6 @@ class VarDeclExpr implements Expression {
 }
 
 /**
- * Updating an existing variable.
- * If the variable is not set already, it is added
- * to the global scope.
- */
-class AssignExpr implements Expression {
-    private String varName;
-    private Expression e;
-    public AssignExpr(String varName, Expression e) {
-        this.varName = varName;
-        this.e = e;
-    }
-    public Value evaluate(Environment env) {
-        Value v = e.evaluate(env);
-        env.updateVar(varName, v);
-        return v;
-    }
-}
-
-/**
  * A function declaration, which evaluates to a closure.
  */
 class FunctionDeclExpr implements Expression {
