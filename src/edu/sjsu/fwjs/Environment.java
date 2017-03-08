@@ -24,7 +24,7 @@ public class Environment {
      * If the variable name is in the current scope, it is returned.
      * Otherwise, search for the variable in the outer scope.
      * If we are at the outermost scope (AKA the global scope)
-     * null is returned (similar to how JS returns undefined.
+     * null is returned (similar to how JS returns undefined).
      */
     public Value resolveVar(String varName) {
         if (env.containsKey(varName)) {
