@@ -1,7 +1,7 @@
 # Update these variables to match the locations
 JUNIT_JAR=lib/junit-4.12.jar
 HAMCREST_JAR=lib/hamcrest-core-1.3.jar
-ANTLR_JAR=lib/antlr-4.4-complete.jar
+ANTLR_JAR=lib/antlr-4.6-complete.jar
 
 # These variables should not need to be changed
 GRAMMAR_NAME=FeatherweightJavaScript
