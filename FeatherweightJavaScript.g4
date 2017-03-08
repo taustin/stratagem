@@ -48,7 +48,7 @@ LINE_COMMENT  : '//' ~[\n\r]* -> skip ;
 WS            : [ \t]+ -> skip ; // ignore whitespace
 
 
-// ***Paring rules ***
+// *** Parsing rules ***
 
 /** The start rule */
 prog: seq ;
