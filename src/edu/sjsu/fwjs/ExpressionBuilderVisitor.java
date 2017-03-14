@@ -3,17 +3,17 @@ package edu.sjsu.fwjs;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.sjsu.fwjs.parser.FeatherweightJavaScriptBaseVisitor;
-import edu.sjsu.fwjs.parser.FeatherweightJavaScriptParser;
+import edu.sjsu.fwjs.parser.StratagemBaseVisitor;
+import edu.sjsu.fwjs.parser.StratagemParser;
 
-public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor<Expression>{
+public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	@Override
-	public Expression visitProg(FeatherweightJavaScriptParser.ProgContext ctx) {
+	public Expression visitProg(StratagemParser.ProgContext ctx) {
 		return visit(ctx.seq());
 	}
 
 	@Override
-	public Expression visitSeq(FeatherweightJavaScriptParser.SeqContext ctx) {
+	public Expression visitSeq(StratagemParser.SeqContext ctx) {
 		List<Expression> exprs = new ArrayList<>();
 		for (int i=0; i<ctx.expr().size(); i++) {
 			Expression exp = visit(ctx.expr(i));
@@ -23,7 +23,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitIf(FeatherweightJavaScriptParser.IfContext ctx) {
+	public Expression visitIf(StratagemParser.IfContext ctx) {
 		Expression cond = visit(ctx.expr());
 		Expression thn = visit(ctx.seq(0));
 		Expression els = visit(ctx.seq(1));
@@ -31,21 +31,21 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitMulDivMod(FeatherweightJavaScriptParser.MulDivModContext ctx) {
+	public Expression visitMulDivMod(StratagemParser.MulDivModContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
 	}
 
 	@Override
-	public Expression visitAddSub(FeatherweightJavaScriptParser.AddSubContext ctx) {
+	public Expression visitAddSub(StratagemParser.AddSubContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
 	}
 
 	@Override
-	public Expression visitComparison(FeatherweightJavaScriptParser.ComparisonContext ctx) {
+	public Expression visitComparison(StratagemParser.ComparisonContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
@@ -58,37 +58,37 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	private BinOpExpr binOpExpHelper(int type, Expression lhs, Expression rhs) {
 		Op op = null;
 		switch (type) {
-		case FeatherweightJavaScriptParser.ADD:
+		case StratagemParser.ADD:
 			op = Op.ADD;
 			break;
-		case FeatherweightJavaScriptParser.SUB:
+		case StratagemParser.SUB:
 			op = Op.SUBTRACT;
 			break;
-		case FeatherweightJavaScriptParser.MUL:
+		case StratagemParser.MUL:
 			op = Op.MULTIPLY;
 			break;
-		case FeatherweightJavaScriptParser.DIV:
+		case StratagemParser.DIV:
 			op = Op.DIVIDE;
 			break;
-		case FeatherweightJavaScriptParser.MOD:
+		case StratagemParser.MOD:
 			op = Op.MOD;
 			break;
-		case FeatherweightJavaScriptParser.LT:
+		case StratagemParser.LT:
 			op = Op.LT;
 			break;
-		case FeatherweightJavaScriptParser.LE:
+		case StratagemParser.LE:
 			op = Op.LE;
 			break;
-		case FeatherweightJavaScriptParser.GT:
+		case StratagemParser.GT:
 			op = Op.GT;
 			break;
-		case FeatherweightJavaScriptParser.GE:
+		case StratagemParser.GE:
 			op = Op.GE;
 			break;
-		case FeatherweightJavaScriptParser.EQ:
+		case StratagemParser.EQ:
 			op = Op.EQ;
 			break;
-		case FeatherweightJavaScriptParser.NE:
+		case StratagemParser.NE:
 			op = Op.NE;
 			break;
 		}
@@ -96,7 +96,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitFunctionApp(FeatherweightJavaScriptParser.FunctionAppContext ctx) {
+	public Expression visitFunctionApp(StratagemParser.FunctionAppContext ctx) {
 		Expression f = visit(ctx.expr());
 		List<Expression> args = new ArrayList<>();
 		Expression arg = visit(ctx.args().getChild(1));
@@ -105,7 +105,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitFunctionDecl(FeatherweightJavaScriptParser.FunctionDeclContext ctx) {
+	public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
 		List<String> params = new ArrayList<>();
 		for (int i=1; i<ctx.params().getChildCount()-1; i+=2) {
 			params.add(ctx.params().getChild(i).getText());
@@ -115,7 +115,7 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitLet(FeatherweightJavaScriptParser.LetContext ctx) {
+	public Expression visitLet(StratagemParser.LetContext ctx) {
 		String id = ctx.ID().getText();
 		Expression value = visit(ctx.expr(0));
 		Expression next = visit(ctx.expr(1));
@@ -130,30 +130,30 @@ public class ExpressionBuilderVisitor extends FeatherweightJavaScriptBaseVisitor
 	}
 
 	@Override
-	public Expression visitInt(FeatherweightJavaScriptParser.IntContext ctx) {
+	public Expression visitInt(StratagemParser.IntContext ctx) {
 		int val = Integer.valueOf(ctx.LIT_INT().getText());
 		return new ValueExpr(new IntVal(val));
 	}
 
 	@Override
-	public Expression visitBool(FeatherweightJavaScriptParser.BoolContext ctx) {
+	public Expression visitBool(StratagemParser.BoolContext ctx) {
 		boolean val = Boolean.valueOf(ctx.LIT_BOOL().getText());
 		return new ValueExpr(new BoolVal(val));
 	}
 
 	@Override
-	public Expression visitString(FeatherweightJavaScriptParser.StringContext ctx) {
+	public Expression visitString(StratagemParser.StringContext ctx) {
 		String val = ctx.LIT_STRING().getText();
 		return new ValueExpr(new StringVal(val));
 	}
 
 	@Override
-	public Expression visitUnit(FeatherweightJavaScriptParser.UnitContext ctx) {
+	public Expression visitUnit(StratagemParser.UnitContext ctx) {
 		return new ValueExpr(new UnitVal());
 	}
 
 	@Override
-	public Expression visitId(FeatherweightJavaScriptParser.IdContext ctx) {
+	public Expression visitId(StratagemParser.IdContext ctx) {
 		String id = ctx.ID().getText();
 		return new VarExpr(id);
 	}

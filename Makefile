@@ -4,7 +4,7 @@ HAMCREST_JAR=lib/hamcrest-core-1.3.jar
 ANTLR_JAR=lib/antlr-4.6-complete.jar
 
 # These variables should not need to be changed
-GRAMMAR_NAME=FeatherweightJavaScript
+GRAMMAR_NAME=Stratagem
 GRAMMAR=${GRAMMAR_NAME}.g4
 TEST_CLASSPATH=${JUNIT_JAR}:${HAMCREST_JAR}:${ANTLR_JAR}
 STRATAGEM_SCRIPT_DIR=stratagemScripts

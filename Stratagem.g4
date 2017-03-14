@@ -1,4 +1,4 @@
-grammar FeatherweightJavaScript;
+grammar Stratagem;
 
 
 @header { package edu.sjsu.fwjs.parser; }
