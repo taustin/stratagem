@@ -101,6 +101,7 @@ class ClosureVal implements Value {
         this.outerEnv = env;
     }
     public String toString() {
+        // TODO: Print type annotations.
         String s = "function(";
         String sep = "";
         for (String param : params) {
