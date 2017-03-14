@@ -1,7 +1,7 @@
 grammar Stratagem;
 
 
-@header { package edu.sjsu.fwjs.parser; }
+@header { package edu.sjsu.stratagem.parser; }
 
 // Reserved words
 FUNCTION : 'fn' ;

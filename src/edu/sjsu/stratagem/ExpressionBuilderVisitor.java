@@ -1,10 +1,10 @@
-package edu.sjsu.fwjs;
+package edu.sjsu.stratagem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.sjsu.fwjs.parser.StratagemBaseVisitor;
-import edu.sjsu.fwjs.parser.StratagemParser;
+import edu.sjsu.stratagem.parser.StratagemBaseVisitor;
+import edu.sjsu.stratagem.parser.StratagemParser;
 
 public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	@Override

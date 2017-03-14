@@ -1,8 +1,4 @@
-package edu.sjsu.fwjs;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package edu.sjsu.stratagem;
 
 /**
  * Types in FWJS.

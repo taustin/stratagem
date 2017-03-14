@@ -12,12 +12,12 @@ SCRIPTS=examples.strata
 TREES_DIR=parseTrees
 # Choosing build instead of bin to avoid conflicts with Eclipse
 BUILD_DIR=build
-SRC_FOLDERS=edu/sjsu/fwjs
-PACKAGE_NAME=edu.sjsu.fwjs
+SRC_FOLDERS=edu/sjsu/stratagem
+PACKAGE_NAME=edu.sjsu.stratagem
 GEN_SRC_BASE_DIR=generatedSrc
-PARSER_SRC_FOLDERS=edu/sjsu/fwjs/parser
+PARSER_SRC_FOLDERS=edu/sjsu/stratagem/parser
 GEN_SRC_DIR=${GEN_SRC_BASE_DIR}/${PARSER_SRC_FOLDERS}
-PARSER_PACKAGE_NAME=edu.sjsu.fwjs.parser
+PARSER_PACKAGE_NAME=edu.sjsu.stratagem.parser
 ZIP_FILE=solution.zip
 
 .PHONY: all test run clean spotless generate

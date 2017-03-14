@@ -1,4 +1,4 @@
-package edu.sjsu.fwjs;
+package edu.sjsu.stratagem;
 
 /**
  * FWJS binary operators.

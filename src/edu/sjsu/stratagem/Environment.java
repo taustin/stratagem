@@ -1,4 +1,4 @@
-package edu.sjsu.fwjs;
+package edu.sjsu.stratagem;
 
 import java.util.Map;
 import java.util.HashMap;

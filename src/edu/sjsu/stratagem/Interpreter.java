@@ -1,10 +1,10 @@
-package edu.sjsu.fwjs;
+package edu.sjsu.stratagem;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import edu.sjsu.fwjs.parser.StratagemLexer;
-import edu.sjsu.fwjs.parser.StratagemParser;
+import edu.sjsu.stratagem.parser.StratagemLexer;
+import edu.sjsu.stratagem.parser.StratagemParser;
 
 import java.io.FileInputStream;
 import java.io.InputStream;

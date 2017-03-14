@@ -1,4 +1,4 @@
-package edu.sjsu.fwjs;
+package edu.sjsu.stratagem;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,6 @@
-package edu.sjsu.fwjs;
+package edu.sjsu.stratagem;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Values in FWJS.
