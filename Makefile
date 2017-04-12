@@ -104,7 +104,7 @@ ${GEN_SRC_DIR}:
 # compile. Make will avoid running this target's commands if our file has a
 # newer timestamp than every source file.
 ${BUILD_DIR}/.build-timestamp: ${BUILD_DIR}/${SRC_FOLDERS} ${SOURCES}
-	javac -cp ${TEST_CLASSPATH} -d ${BUILD_DIR} ${SOURCES} -Xlint:unchecked
+	javac -cp ${TEST_CLASSPATH} -d ${BUILD_DIR} ${SOURCES} -Xlint:unchecked -g
 	@touch build/.build-timestamp
 
 ${BUILD_DIR}/${SRC_FOLDERS}:

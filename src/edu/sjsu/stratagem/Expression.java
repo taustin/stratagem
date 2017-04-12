@@ -36,6 +36,25 @@ class BinOpExpr implements Expression {
         this.e2 = e2;
     }
 
+    public Type typecheck(Environment<Type> env) {
+        Type t1 = e1.typecheck(env);
+        Type t2 = e2.typecheck(env);
+
+        switch (op) {
+        case EQ:
+        case NE:
+            if (!t1.equals(t2)) {
+                throw new StratagemException("Binary operator expected identical types, got: " + t1 + " and " + t2);
+            }
+            return BoolType.singleton;
+        default:
+            if (t1 != IntType.singleton || t2 != IntType.singleton) {
+                throw new StratagemException("Binary operator expected integer arguments, got: " + t1 + " and " + t2);
+            }
+            return IntType.singleton;
+        }
+    }
+
     @SuppressWarnings("incomplete-switch")
     public Value evaluate(Environment<Value> env) {
         Value v1 = e1.evaluate(env);
@@ -92,14 +111,17 @@ class FunctionAppExpr implements Expression {
 
     private Expression f;
     private Expression[] args;
+
     public FunctionAppExpr(Expression f, Expression[] args) {
         this.f = f;
         this.args = args;
     }
+
     public FunctionAppExpr(Expression f, List<Expression> args) {
         this.f = f;
         this.args = args.toArray(expressionArrayHint);
     }
+
     public Value evaluate(Environment<Value> env) {
         ClosureVal closure = (ClosureVal) f.evaluate(env);
         List<Value> argVals = new ArrayList<Value>();
@@ -116,18 +138,27 @@ class FunctionAppExpr implements Expression {
 class FunctionDeclExpr implements Expression {
     private static final String[] stringArrayHint = new String[0];
 
-    private String[] params;
+    private String[] paramNames;
+    private Type[] paramTypes;
+    private Type returnType;  // Type that the programmer ascribed within the Stratagem code.
     private Expression body;
+
     public FunctionDeclExpr(String[] params, Expression body) {
-        this.params = params;
+        this.paramNames = params;
+        // TODO: Add paramTypes
         this.body = body;
+        // TODO: Add returnType
     }
+
     public FunctionDeclExpr(List<String> params, Expression body) {
-        this.params = params.toArray(stringArrayHint);
+        this.paramNames = params.toArray(stringArrayHint);
+        // TODO: Add paramTypes
         this.body = body;
+        // TODO: Add returnType
     }
+
     public Value evaluate(Environment<Value> env) {
-        return new ClosureVal(this.params, this.body, env);
+        return new ClosureVal(this.paramNames, this.body, env);
     }
 }
 
@@ -139,11 +170,13 @@ class IfExpr implements Expression {
     private Expression cond;
     private Expression thn;
     private Expression els;
+
     public IfExpr(Expression cond, Expression thn, Expression els) {
         this.cond = cond;
         this.thn = thn;
         this.els = els;
     }
+
     public Value evaluate(Environment<Value> env) {
         Value v = this.cond.evaluate(env);
         if (!(v instanceof BoolVal))
@@ -185,12 +218,15 @@ class SeqExpr implements Expression {
     private static final Expression[] expressionArrayHint = new Expression[0];
 
     private Expression[] exprs;
+
     public SeqExpr(Expression[] exprs) {
         this.exprs = exprs;
     }
+
     public SeqExpr(List<Expression> exprs) {
         this.exprs = exprs.toArray(expressionArrayHint);
     }
+
     public Value evaluate(Environment<Value> env) {
         Value value = UnitVal.singleton;
         for (Expression e : exprs) {
@@ -205,9 +241,11 @@ class SeqExpr implements Expression {
  */
 class ValueExpr implements Expression {
     private Value val;
+
     public ValueExpr(Value v) {
         this.val = v;
     }
+
     public Value evaluate(Environment<Value> env) {
         return this.val;
     }
@@ -218,9 +256,11 @@ class ValueExpr implements Expression {
  */
 class VarExpr implements Expression {
     private String varName;
+
     public VarExpr(String varName) {
         this.varName = varName;
     }
+
     public Value evaluate(Environment<Value> env) {
         return env.resolveVar(varName);
     }
