@@ -8,29 +8,6 @@ import edu.sjsu.stratagem.parser.StratagemParser;
 
 public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	@Override
-	public Expression visitProg(StratagemParser.ProgContext ctx) {
-		return visit(ctx.seq());
-	}
-
-	@Override
-	public Expression visitSeq(StratagemParser.SeqContext ctx) {
-		List<Expression> exprs = new ArrayList<>();
-		for (int i=0; i<ctx.expr().size(); i++) {
-			Expression exp = visit(ctx.expr(i));
-			if (exp != null) exprs.add(exp);
-		}
-		return new SeqExpr(exprs);
-	}
-
-	@Override
-	public Expression visitIf(StratagemParser.IfContext ctx) {
-		Expression cond = visit(ctx.expr());
-		Expression thn = visit(ctx.seq(0));
-		Expression els = visit(ctx.seq(1));
-		return new IfExpr(cond, thn, els);
-	}
-
-	@Override
 	public Expression visitBinOp(StratagemParser.BinOpContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
@@ -82,6 +59,12 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	}
 
 	@Override
+	public Expression visitBool(StratagemParser.BoolContext ctx) {
+		boolean val = Boolean.valueOf(ctx.LIT_BOOL().getText());
+		return new ValueExpr(new BoolVal(val));
+	}
+
+	@Override
 	public Expression visitFunctionApp(StratagemParser.FunctionAppContext ctx) {
 		Expression f = visit(ctx.expr());
 		List<Expression> args = new ArrayList<>();
@@ -101,6 +84,26 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	}
 
 	@Override
+	public Expression visitId(StratagemParser.IdContext ctx) {
+		String id = ctx.ID().getText();
+		return new VarExpr(id);
+	}
+
+	@Override
+	public Expression visitIf(StratagemParser.IfContext ctx) {
+		Expression cond = visit(ctx.expr());
+		Expression thn = visit(ctx.seq(0));
+		Expression els = visit(ctx.seq(1));
+		return new IfExpr(cond, thn, els);
+	}
+
+	@Override
+	public Expression visitInt(StratagemParser.IntContext ctx) {
+		int val = Integer.valueOf(ctx.LIT_INT().getText());
+		return new ValueExpr(new IntVal(val));
+	}
+
+	@Override
 	public Expression visitLet(StratagemParser.LetContext ctx) {
 		String id = ctx.ID().getText();
 		Expression value = visit(ctx.expr(0));
@@ -116,15 +119,24 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	}
 
 	@Override
-	public Expression visitInt(StratagemParser.IntContext ctx) {
-		int val = Integer.valueOf(ctx.LIT_INT().getText());
-		return new ValueExpr(new IntVal(val));
+	public Expression visitPrint(StratagemParser.PrintContext ctx) {
+		Expression arg = visit(ctx.args().getChild(1));
+	    return new PrintExpr(arg);
 	}
 
 	@Override
-	public Expression visitBool(StratagemParser.BoolContext ctx) {
-		boolean val = Boolean.valueOf(ctx.LIT_BOOL().getText());
-		return new ValueExpr(new BoolVal(val));
+	public Expression visitProg(StratagemParser.ProgContext ctx) {
+		return visit(ctx.seq());
+	}
+
+	@Override
+	public Expression visitSeq(StratagemParser.SeqContext ctx) {
+		List<Expression> exprs = new ArrayList<>();
+		for (int i=0; i<ctx.expr().size(); i++) {
+			Expression exp = visit(ctx.expr(i));
+			if (exp != null) exprs.add(exp);
+		}
+		return new SeqExpr(exprs);
 	}
 
 	@Override
@@ -136,17 +148,5 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	@Override
 	public Expression visitUnit(StratagemParser.UnitContext ctx) {
 		return new ValueExpr(UnitVal.singleton);
-	}
-
-	@Override
-	public Expression visitId(StratagemParser.IdContext ctx) {
-		String id = ctx.ID().getText();
-		return new VarExpr(id);
-	}
-
-	@Override
-	public Expression visitPrint(StratagemParser.PrintContext ctx) {
-		Expression arg = visit(ctx.args().getChild(1));
-	    return new PrintExpr(arg);
 	}
 }
