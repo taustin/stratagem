@@ -58,23 +58,23 @@ class UnitType implements Type {
 }
 
 /**
- * A function's type. Functions take one argument and have one return value.
+ * A closure's type. Closures take one argument and have one return value.
  */
-class FunctionType implements Type {
+class ClosureType implements Type {
     private Type arg;
     private Type ret;
 
-    public FunctionType(Type arg, Type ret) {
+    public ClosureType(Type arg, Type ret) {
         this.arg = arg;
         this.ret = ret;
     }
 
     @Override
     public boolean equals(Object that) {
-        if (!(that instanceof FunctionType)) {
+        if (!(that instanceof ClosureType)) {
             return false;
         }
-        FunctionType other = (FunctionType) that;
+        ClosureType other = (ClosureType) that;
         return arg.equals(other.arg) && ret.equals(other.ret);
     }
 
