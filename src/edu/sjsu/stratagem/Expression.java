@@ -8,6 +8,12 @@ import java.util.List;
  */
 public interface Expression {
     /**
+     * Determines the value type that evaluation of the expression will result in.
+     * Throws an exception if the expression is not well-typed.
+     */
+    Type typecheck(Environment<Type> env);
+
+    /**
      * Evaluate the expression in the context of the specified environment.
      */
     Value evaluate(Environment<Value> env);
