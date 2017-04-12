@@ -211,6 +211,20 @@ class IfExpr implements Expression {
         this.els = els;
     }
 
+    public Type typecheck(Environment<Type> env) {
+        Type condT = cond.typecheck(env);
+        Type thnT = thn.typecheck(env);
+        Type elsT = els.typecheck(env);
+
+        if (condT != BoolType.singleton) {
+            throw new StratagemException("If-expression expected boolean in condition, got: " + condT);
+        }
+        if (!thnT.equals(elsT)) {
+            throw new StratagemException("If-expression branches have unequal type: " + thnT + " and " + elsT);
+        }
+        return thnT;
+    }
+
     public Value evaluate(Environment<Value> env) {
         Value v = this.cond.evaluate(env);
         if (!(v instanceof BoolVal))
