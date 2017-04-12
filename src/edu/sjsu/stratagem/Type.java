@@ -1,8 +1,8 @@
 package edu.sjsu.stratagem;
 
 /**
- * Types in FWJS.
- * Evaluating a FWJS expression should return a FWJS value.
+ * Types in Stratagem.
+ * Evaluating a Stratagem expression should return a Stratagem value.
  */
 public interface Type {}
 

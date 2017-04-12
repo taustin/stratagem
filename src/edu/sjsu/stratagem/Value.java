@@ -3,8 +3,8 @@ package edu.sjsu.stratagem;
 import java.util.List;
 
 /**
- * Values in FWJS.
- * Evaluating a FWJS expression should return a FWJS value.
+ * Values in Stratagem.
+ * Evaluating a Stratagem expression should return a Stratagem value.
  */
 public interface Value {}
 

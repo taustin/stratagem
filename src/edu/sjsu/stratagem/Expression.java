@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FWJS expressions.
+ * Stratagem expressions.
  */
 public interface Expression {
     /**
@@ -195,7 +195,7 @@ class SeqExpr implements Expression {
 }
 
 /**
- * FWJS constants.
+ * Stratagem constants.
  */
 class ValueExpr implements Expression {
     private Value val;
@@ -208,7 +208,7 @@ class ValueExpr implements Expression {
 }
 
 /**
- * Expressions that are a FWJS variable.
+ * Expressions that are a Stratagem variable.
  */
 class VarExpr implements Expression {
     private String varName;
