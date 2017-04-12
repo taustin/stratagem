@@ -321,6 +321,10 @@ class VarExpr implements Expression {
         this.varName = varName;
     }
 
+    public Type typecheck(Environment<Type> env) {
+        return env.resolveVar(varName);
+    }
+
     public Value evaluate(Environment<Value> env) {
         return env.resolveVar(varName);
     }
