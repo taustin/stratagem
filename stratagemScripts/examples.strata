@@ -1,0 +1,4 @@
+let x: Int = 0 in x + 1;
+let x: Int = 3 + 4 in x;
+let y: Bool = true in ();
+fn(z: Bool): Bool { z; z }(false)
