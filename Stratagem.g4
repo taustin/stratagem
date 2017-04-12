@@ -69,19 +69,17 @@ prog: seq ;
 
 seq: expr (SEPARATOR expr)* ;
 
-expr: expr args                                                       # functionApp
-    | FUNCTION params COLON type LBRACE seq RBRACE                    # functionDecl
-    | LIT_INT                                                         # int
-    | LIT_BOOL                                                        # bool
-    | LIT_STRING                                                      # string
-    | UNIT                                                            # unit
-    | ID                                                              # id
-    | IF LPAREN expr RPAREN LBRACE seq RBRACE ELSE LBRACE seq RBRACE  # if
-    | LET ID COLON type ASSIGN expr IN expr                           # let
-    | expr op=( MUL | DIV | MOD ) expr                                # MulDivMod
-    | expr op=( ADD | SUB ) expr                                      # AddSub
-    | expr op=( GT | GE | LT | LE | EQ | NE ) expr                    # Comparison
-    | PRINT args                                                      # print
+expr: expr args                                                                   # functionApp
+    | FUNCTION params COLON type LBRACE seq RBRACE                                # functionDecl
+    | LIT_INT                                                                     # int
+    | LIT_BOOL                                                                    # bool
+    | LIT_STRING                                                                  # string
+    | UNIT                                                                        # unit
+    | ID                                                                          # id
+    | IF LPAREN expr RPAREN LBRACE seq RBRACE ELSE LBRACE seq RBRACE              # if
+    | LET ID COLON type ASSIGN expr IN expr                                       # let
+    | expr op=( ADD | SUB | MUL | DIV | MOD | GT | GE | LT | LE | EQ | NE ) expr  # binOp
+    | PRINT args                                                                  # print
     ;
 
 params: LPAREN ID COLON type RPAREN

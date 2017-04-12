@@ -31,21 +31,7 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	}
 
 	@Override
-	public Expression visitMulDivMod(StratagemParser.MulDivModContext ctx) {
-		Expression lhs = visit(ctx.expr(0));
-		Expression rhs = visit(ctx.expr(1));
-		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
-	}
-
-	@Override
-	public Expression visitAddSub(StratagemParser.AddSubContext ctx) {
-		Expression lhs = visit(ctx.expr(0));
-		Expression rhs = visit(ctx.expr(1));
-		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
-	}
-
-	@Override
-	public Expression visitComparison(StratagemParser.ComparisonContext ctx) {
+	public Expression visitBinOp(StratagemParser.BinOpContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
