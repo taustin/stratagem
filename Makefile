@@ -103,9 +103,8 @@ ${GEN_SRC_DIR}:
 # compiled. We update its "last modified" timestamp on the filesystem after we
 # compile. Make will avoid running this target's commands if our file has a
 # newer timestamp than every source file.
-${BUILD_DIR}/.build-timestamp: ${BUILD_DIR}/${SRC_FOLDERS} ${MAIN_SOURCES} ${TEST_SOURCES} ${GENERATED_SOURCES}
-	javac -cp ${TEST_CLASSPATH} \
-	      -d ${BUILD_DIR} ${MAIN_SOURCES} ${TEST_SOURCES} ${GENERATED_SOURCES}
+${BUILD_DIR}/.build-timestamp: ${BUILD_DIR}/${SRC_FOLDERS} ${SOURCES}
+	javac -cp ${TEST_CLASSPATH} -d ${BUILD_DIR} ${SOURCES}
 	@touch build/.build-timestamp
 
 ${BUILD_DIR}/${SRC_FOLDERS}:
