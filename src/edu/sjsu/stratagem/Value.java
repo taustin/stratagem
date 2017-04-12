@@ -87,17 +87,17 @@ class ClosureVal implements Value {
 
     private String[] params;
     private Expression body;
-    private Environment outerEnv;
+    private Environment<Value> outerEnv;
     /**
      * The environment is the environment where the function was created.
      * This design is what makes this expression a closure.
      */
-    public ClosureVal(String[] params, Expression body, Environment env) {
+    public ClosureVal(String[] params, Expression body, Environment<Value> env) {
         this.params = params;
         this.body = body;
         this.outerEnv = env;
     }
-    public ClosureVal(List<String> params, Expression body, Environment env) {
+    public ClosureVal(List<String> params, Expression body, Environment<Value> env) {
         this.params = params.toArray(stringArrayHint);
         this.body = body;
         this.outerEnv = env;
@@ -120,7 +120,7 @@ class ClosureVal implements Value {
      */
     public Value apply(List<Value> argVals) {
         assert argVals.size() == params.length;
-        Environment newEnv = new Environment(outerEnv);
+        Environment<Value> newEnv = new Environment<Value>(outerEnv);
         for (int i=0; i<argVals.size(); i++) {
             String varName = params[i];
             Value v = argVals.get(i);

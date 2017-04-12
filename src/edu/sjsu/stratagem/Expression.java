@@ -10,7 +10,7 @@ public interface Expression {
     /**
      * Evaluate the expression in the context of the specified environment.
      */
-    Value evaluate(Environment env);
+    Value evaluate(Environment<Value> env);
 }
 
 // NOTE: Using package access so that all implementations of Expression
@@ -31,7 +31,7 @@ class BinOpExpr implements Expression {
     }
 
     @SuppressWarnings("incomplete-switch")
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         Value v1 = e1.evaluate(env);
         Value v2 = e2.evaluate(env);
 
@@ -94,7 +94,7 @@ class FunctionAppExpr implements Expression {
         this.f = f;
         this.args = args.toArray(expressionArrayHint);
     }
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         ClosureVal closure = (ClosureVal) f.evaluate(env);
         List<Value> argVals = new ArrayList<Value>();
         for (Expression arg : args) {
@@ -120,7 +120,7 @@ class FunctionDeclExpr implements Expression {
         this.params = params.toArray(stringArrayHint);
         this.body = body;
     }
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         return new ClosureVal(this.params, this.body, env);
     }
 }
@@ -138,7 +138,7 @@ class IfExpr implements Expression {
         this.thn = thn;
         this.els = els;
     }
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         Value v = this.cond.evaluate(env);
         if (!(v instanceof BoolVal))
             throw new StratagemException("Expected boolean, but got " + v);
@@ -161,7 +161,7 @@ class PrintExpr implements Expression {
         this.arg = arg;
     }
 
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         Value value = arg.evaluate(env);
         print(value);
         return UnitVal.singleton;
@@ -185,7 +185,7 @@ class SeqExpr implements Expression {
     public SeqExpr(List<Expression> exprs) {
         this.exprs = exprs.toArray(expressionArrayHint);
     }
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         Value value = UnitVal.singleton;
         for (Expression e : exprs) {
             value = e.evaluate(env);
@@ -202,7 +202,7 @@ class ValueExpr implements Expression {
     public ValueExpr(Value v) {
         this.val = v;
     }
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         return this.val;
     }
 }
@@ -215,7 +215,7 @@ class VarExpr implements Expression {
     public VarExpr(String varName) {
         this.varName = varName;
     }
-    public Value evaluate(Environment env) {
+    public Value evaluate(Environment<Value> env) {
         return env.resolveVar(varName);
     }
 }

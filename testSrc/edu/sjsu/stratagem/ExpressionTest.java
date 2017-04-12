@@ -11,7 +11,7 @@ public class ExpressionTest {
 
     @Test
     public void testValueExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         ValueExpr ve = new ValueExpr(new IntVal(3));
         IntVal i = (IntVal) ve.evaluate(env);
         assertEquals(3, i.toInt());
@@ -19,7 +19,7 @@ public class ExpressionTest {
 
     @Test
     public void testVarExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         Value v = new IntVal(3);
         env.updateVar("x", v);
         Expression e = new VarExpr("x");
@@ -28,7 +28,7 @@ public class ExpressionTest {
 
     @Test
     public void testVarNotFoundExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         Value v = new IntVal(3);
         env.updateVar("x", v);
         Expression e = new VarExpr("y");
@@ -37,7 +37,7 @@ public class ExpressionTest {
 
     @Test
     public void testIfTrueExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         IfExpr ife = new IfExpr(new ValueExpr(new BoolVal(true)),
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
@@ -47,7 +47,7 @@ public class ExpressionTest {
 
     @Test
     public void testIfFalseExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         IfExpr ife = new IfExpr(new ValueExpr(new BoolVal(false)),
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
@@ -57,7 +57,7 @@ public class ExpressionTest {
 
     @Test
     public void testBadIfExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         IfExpr ife = new IfExpr(new ValueExpr(new IntVal(0)),
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
@@ -69,7 +69,7 @@ public class ExpressionTest {
 
     @Test
     public void testBinOpExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         BinOpExpr boe = new BinOpExpr(Op.ADD,
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
@@ -79,7 +79,7 @@ public class ExpressionTest {
 
     @Test
     public void testSeqExpr() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         SeqExpr se = new SeqExpr(new Expression[] {
                 new ValueExpr(new IntVal(2)),
                 new BinOpExpr(Op.MULTIPLY,
@@ -92,7 +92,7 @@ public class ExpressionTest {
     @Test
     // (function(x) { x; })(321);
     public void testIdFunction() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         List<String> params = new ArrayList<>();
         params.add("x");
         FunctionDeclExpr f = new FunctionDeclExpr(params, new VarExpr("x"));
@@ -105,7 +105,7 @@ public class ExpressionTest {
     @Test
     // (function(x,y) { x / y; })(8,2);
     public void testDivFunction() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         List<String> params = new ArrayList<>();
         params.add("x");
         params.add("y");
@@ -126,7 +126,7 @@ public class ExpressionTest {
         StringVal alice = new StringVal("Alice");
         StringVal bob = new StringVal("Bob");
 
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 new String[] {"unused"},
                 new VarExpr("name"));
@@ -147,7 +147,7 @@ public class ExpressionTest {
         StringVal alice = new StringVal("Alice");
         StringVal bob = new StringVal("Bob");
 
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 new String[] {"name"},
                 new VarExpr("name"));
@@ -168,7 +168,7 @@ public class ExpressionTest {
         StringVal alice = new StringVal("Alice");
         StringVal bob = new StringVal("Bob");
 
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 new String[] {"name"},
                 new VarExpr("name"));
@@ -189,7 +189,7 @@ public class ExpressionTest {
     @Test
     // "no" + "table"
     public void testStringAppend() {
-        Environment env = new Environment();
+        Environment<Value> env = new Environment<>();
         Expression s1 = new ValueExpr(new StringVal("no"));
         Expression s2 = new ValueExpr(new StringVal("table"));
         Expression exp = new BinOpExpr(Op.ADD, s1, s2);

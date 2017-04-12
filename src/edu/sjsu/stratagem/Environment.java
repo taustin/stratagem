@@ -3,9 +3,13 @@ package edu.sjsu.stratagem;
 import java.util.Map;
 import java.util.HashMap;
 
-public class Environment {
-    private Map<String,Value> env = new HashMap<String,Value>();
-    private Environment outerEnv;
+/**
+ * A variable environment for the program. During typechecking of a program V
+ * will be Type, and during evaluation of a program V will be Value.
+ */
+public class Environment<V> {
+    private Map<String,V> env = new HashMap<>();
+    private Environment<V> outerEnv;
 
     /**
      * Constructor for global environment
@@ -15,7 +19,7 @@ public class Environment {
     /**
      * Constructor for local environment of a function
      */
-    public Environment(Environment outerEnv) {
+    public Environment(Environment<V> outerEnv) {
         this.outerEnv = outerEnv;
     }
 
@@ -26,7 +30,7 @@ public class Environment {
      * If we are at the outermost scope (AKA the global scope)
      * null is returned (similar to how JS returns undefined).
      */
-    public Value resolveVar(String varName) {
+    public V resolveVar(String varName) {
         if (env.containsKey(varName)) {
             return env.get(varName);
         } else if (outerEnv == null) {
@@ -41,7 +45,7 @@ public class Environment {
      * If a variable has not been defined previously in the current scope,
      * or any of the function's outer scopes, the var is stored in the global scope.
      */
-    public void updateVar(String key, Value v) {
+    public void updateVar(String key, V v) {
         if (env.containsKey(key) || outerEnv == null) {
             env.put(key, v);
         } else {
@@ -52,9 +56,9 @@ public class Environment {
     /**
      * Creates a new variable in the local scope.
      * If the variable has been defined in the current scope previously,
-     * a RuntimeException is thrown.
+     * a StratagemException is thrown.
      */
-    public void createVar(String key, Value v) {
+    public void createVar(String key, V v) {
         if (env.containsKey(key)) {
             throw new StratagemException("Redeclaring existing var " + key);
         }
