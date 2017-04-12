@@ -6,7 +6,9 @@ import java.util.List;
  * Values in Stratagem.
  * Evaluating a Stratagem expression should return a Stratagem value.
  */
-public interface Value {}
+public interface Value {
+    Type getType();
+}
 
 //NOTE: Using package access so that all implementations of Value
 //can be included in the same file.
@@ -17,6 +19,9 @@ public interface Value {}
 class BoolVal implements Value {
     private boolean boolVal;
     public BoolVal(boolean b) { this.boolVal = b; }
+    public Type getType() {
+        return BoolType.singleton;
+    }
     public boolean toBoolean() { return this.boolVal; }
     @Override
     public boolean equals(Object that) {
@@ -35,6 +40,9 @@ class BoolVal implements Value {
 class IntVal implements Value {
     private int i;
     public IntVal(int i) { this.i = i; }
+    public Type getType() {
+        return IntType.singleton;
+    }
     public int toInt() { return this.i; }
     @Override
     public boolean equals(Object that) {
@@ -53,6 +61,9 @@ class IntVal implements Value {
 class StringVal implements Value {
     private String s;
     public StringVal(String s) { this.s = s; }
+    public Type getType() {
+        return StringType.singleton;
+    }
     @Override
     public boolean equals(Object that) {
         if (!(that instanceof StringVal)) return false;
@@ -68,6 +79,9 @@ class StringVal implements Value {
 class UnitVal implements Value {
     public static final UnitVal singleton = new UnitVal();
 
+    public Type getType() {
+        return UnitType.singleton;
+    }
     @Override
     public boolean equals(Object that) {
         return (that instanceof UnitVal);
@@ -85,44 +99,61 @@ class UnitVal implements Value {
 class ClosureVal implements Value {
     private static final String[] stringArrayHint = new String[0];
 
-    private String[] params;
+    private String[] paramNames;
+    private Type[] paramTypes;
     private Expression body;
-    private Environment<Value> outerEnv;
+    private Environment<Value> outerEnvValues;
+    private Environment<Type> outerEnvTypes;
+
     /**
      * The environment is the environment where the function was created.
      * This design is what makes this expression a closure.
      */
     public ClosureVal(String[] params, Expression body, Environment<Value> env) {
-        this.params = params;
+        this.paramNames = params;
+        // TODO: Add paramTypes
         this.body = body;
-        this.outerEnv = env;
+        this.outerEnvValues = env;
+        // TODO: Add outerEnvTypes
     }
+
     public ClosureVal(List<String> params, Expression body, Environment<Value> env) {
-        this.params = params.toArray(stringArrayHint);
+        this.paramNames = params.toArray(stringArrayHint);
         this.body = body;
-        this.outerEnv = env;
+        this.outerEnvValues = env;
     }
+
+    public Type getType() {
+        Environment<Type> innerEnv = new Environment<>(outerEnvTypes);
+        for (int i = 0; i < paramNames.length; i++) {
+            innerEnv.createVar(paramNames[i], paramTypes[i]);
+        }
+        return new ClosureType(paramTypes[0], body.typecheck(innerEnv));
+    }
+
     public String toString() {
         // TODO: Print type annotations.
-        String s = "function(";
+        StringBuilder s = new StringBuilder("function(");
         String sep = "";
-        for (String param : params) {
-            s += sep + param;
+        for (int i = 0; i < paramNames.length; i++) {
+            s.append(sep).append(paramNames[i]).append(": ").append(paramTypes[i]);
             sep = ",";
         }
-        s += ") {...};";
-        return s;
+        s.append("): ").append(body.typecheck(outerEnvTypes)).append(" {...};");
+
+        return s.toString();
     }
+
     /**
      * To apply a closure, first create a new local environment, with an outer scope
      * of the environment where the function was created. Each parameter should
      * be bound to its matching argument and added to the new local environment.
      */
     public Value apply(List<Value> argVals) {
-        assert argVals.size() == params.length;
-        Environment<Value> newEnv = new Environment<Value>(outerEnv);
-        for (int i=0; i<argVals.size(); i++) {
-            String varName = params[i];
+        assert argVals.size() == paramNames.length;
+        Environment<Value> newEnv = new Environment<>(outerEnvValues);
+        for (int i = 0; i < argVals.size(); i++) {
+            String varName = paramNames[i];
             Value v = argVals.get(i);
             newEnv.createVar(varName, v);
         }
