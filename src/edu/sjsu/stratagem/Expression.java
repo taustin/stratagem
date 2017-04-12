@@ -17,34 +17,6 @@ public interface Expression {
 // can be included in the same file.
 
 /**
- * FWJS constants.
- */
-class ValueExpr implements Expression {
-    private Value val;
-    public ValueExpr(Value v) {
-        this.val = v;
-    }
-    public Value evaluate(Environment env) {
-        return this.val;
-    }
-}
-
-/**
- * Expressions that are a FWJS variable.
- */
-class VarExpr implements Expression {
-    private String varName;
-    public VarExpr(String varName) {
-        this.varName = varName;
-    }
-    public Value evaluate(Environment env) {
-        return env.resolveVar(varName);
-    }
-}
-
-
-
-/**
  * Binary operators (+, -, *, etc).
  * Currently only numbers are supported.
  */
@@ -62,7 +34,7 @@ class BinOpExpr implements Expression {
     public Value evaluate(Environment env) {
         Value v1 = e1.evaluate(env);
         Value v2 = e2.evaluate(env);
-        
+
         // Special cases switch
         switch (op) {
         case EQ:
@@ -75,7 +47,7 @@ class BinOpExpr implements Expression {
                 return new StringVal(v1.toString() + v2.toString());
             }
         }
-        
+
         // Int operations case
         if (!(v1 instanceof IntVal && v2 instanceof IntVal))
             throw new RuntimeException("Expected ints, but got " + v1 + " and " + v2);
@@ -101,77 +73,8 @@ class BinOpExpr implements Expression {
         case LE:
             return new BoolVal(i <= j);
         }
-        
+
         throw new RuntimeException("Unrecognized operator: " + op);
-    }
-}
-
-/**
- * If-then-else expressions.
- * Unlike JS, if expressions return a value.
- */
-class IfExpr implements Expression {
-    private Expression cond;
-    private Expression thn;
-    private Expression els;
-    public IfExpr(Expression cond, Expression thn, Expression els) {
-        this.cond = cond;
-        this.thn = thn;
-        this.els = els;
-    }
-    public Value evaluate(Environment env) {
-        Value v = this.cond.evaluate(env);
-        if (!(v instanceof BoolVal))
-            throw new RuntimeException("Expected boolean, but got " + v);
-        BoolVal bv = (BoolVal) v;
-        if (bv.toBoolean()) {
-            return this.thn.evaluate(env);
-        } else {
-            return this.els.evaluate(env);
-        }
-    }
-}
-
-/**
- * Sequence expressions (i.e. several back-to-back expressions).
- */
-class SeqExpr implements Expression {
-    private static final Expression[] expressionArrayHint = new Expression[0];
-
-    private Expression[] exprs;
-    public SeqExpr(Expression[] exprs) {
-        this.exprs = exprs;
-    }
-    public SeqExpr(List<Expression> exprs) {
-        this.exprs = exprs.toArray(expressionArrayHint);
-    }
-    public Value evaluate(Environment env) {
-        Value value = UnitVal.singleton;
-        for (Expression e : exprs) {
-            value = e.evaluate(env);
-        }
-        return value;
-    }
-}
-
-/**
- * A function declaration, which evaluates to a closure.
- */
-class FunctionDeclExpr implements Expression {
-    private static final String[] stringArrayHint = new String[0];
-
-    private String[] params;
-    private Expression body;
-    public FunctionDeclExpr(String[] params, Expression body) {
-        this.params = params;
-        this.body = body;
-    }
-    public FunctionDeclExpr(List<String> params, Expression body) {
-        this.params = params.toArray(stringArrayHint);
-        this.body = body;
-    }
-    public Value evaluate(Environment env) {
-        return new ClosureVal(this.params, this.body, env);
     }
 }
 
@@ -202,6 +105,53 @@ class FunctionAppExpr implements Expression {
 }
 
 /**
+ * A function declaration, which evaluates to a closure.
+ */
+class FunctionDeclExpr implements Expression {
+    private static final String[] stringArrayHint = new String[0];
+
+    private String[] params;
+    private Expression body;
+    public FunctionDeclExpr(String[] params, Expression body) {
+        this.params = params;
+        this.body = body;
+    }
+    public FunctionDeclExpr(List<String> params, Expression body) {
+        this.params = params.toArray(stringArrayHint);
+        this.body = body;
+    }
+    public Value evaluate(Environment env) {
+        return new ClosureVal(this.params, this.body, env);
+    }
+}
+
+/**
+ * If-then-else expressions.
+ * Unlike JS, if expressions return a value.
+ */
+class IfExpr implements Expression {
+    private Expression cond;
+    private Expression thn;
+    private Expression els;
+    public IfExpr(Expression cond, Expression thn, Expression els) {
+        this.cond = cond;
+        this.thn = thn;
+        this.els = els;
+    }
+    public Value evaluate(Environment env) {
+        Value v = this.cond.evaluate(env);
+        if (!(v instanceof BoolVal))
+            throw new RuntimeException("Expected boolean, but got " + v);
+        BoolVal bv = (BoolVal) v;
+        if (bv.toBoolean()) {
+            return this.thn.evaluate(env);
+        } else {
+            return this.els.evaluate(env);
+        }
+    }
+}
+
+/**
  * Print expression. Hard to express in the type system, so we make it a language-level construct.
  */
 class PrintExpr implements Expression {
@@ -219,5 +169,53 @@ class PrintExpr implements Expression {
 
     private void print(Value value) {
         System.out.println(value.toString());
+    }
+}
+
+/**
+ * Sequence expressions (i.e. several back-to-back expressions).
+ */
+class SeqExpr implements Expression {
+    private static final Expression[] expressionArrayHint = new Expression[0];
+
+    private Expression[] exprs;
+    public SeqExpr(Expression[] exprs) {
+        this.exprs = exprs;
+    }
+    public SeqExpr(List<Expression> exprs) {
+        this.exprs = exprs.toArray(expressionArrayHint);
+    }
+    public Value evaluate(Environment env) {
+        Value value = UnitVal.singleton;
+        for (Expression e : exprs) {
+            value = e.evaluate(env);
+        }
+        return value;
+    }
+}
+
+/**
+ * FWJS constants.
+ */
+class ValueExpr implements Expression {
+    private Value val;
+    public ValueExpr(Value v) {
+        this.val = v;
+    }
+    public Value evaluate(Environment env) {
+        return this.val;
+    }
+}
+
+/**
+ * Expressions that are a FWJS variable.
+ */
+class VarExpr implements Expression {
+    private String varName;
+    public VarExpr(String varName) {
+        this.varName = varName;
+    }
+    public Value evaluate(Environment env) {
+        return env.resolveVar(varName);
     }
 }
