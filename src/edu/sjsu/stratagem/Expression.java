@@ -122,6 +122,27 @@ class FunctionAppExpr implements Expression {
         this.args = args.toArray(expressionArrayHint);
     }
 
+    public Type typecheck(Environment<Type> env) {
+        Type fType = f.typecheck(env);
+
+        if (!(fType instanceof ClosureType)) {
+            throw new StratagemException("Not a function: " + f);
+        }
+        ClosureType closureType = (ClosureType) fType;
+
+        Type[] argTypes = new Type[args.length];
+        for (int i = 0; i < args.length; i++) {
+            argTypes[i] = args[i].typecheck(env);
+        }
+
+        Type[] closureArgTypes = closureType.getArgTypes();
+        if (!closureArgTypes.equals(argTypes)) {
+            throw new StratagemException("Incorrect argument types, expected: " + closureArgTypes + ", got: " + argTypes);
+        }
+
+        return closureType.getReturnType();
+    }
+
     public Value evaluate(Environment<Value> env) {
         ClosureVal closure = (ClosureVal) f.evaluate(env);
         List<Value> argVals = new ArrayList<Value>();

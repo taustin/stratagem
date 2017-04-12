@@ -69,6 +69,16 @@ class ClosureType implements Type {
         this.ret = ret;
     }
 
+    public Type[] getArgTypes() {
+        return new Type[] {
+                arg
+        };
+    }
+
+    public Type getReturnType() {
+        return ret;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (!(that instanceof ClosureType)) {
