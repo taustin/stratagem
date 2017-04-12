@@ -35,64 +35,6 @@ class BoolVal implements Value {
 }
 
 /**
- * Numbers.  Only integers are supported.
- */
-class IntVal implements Value {
-    private int i;
-    public IntVal(int i) { this.i = i; }
-    public Type getType() {
-        return IntType.singleton;
-    }
-    public int toInt() { return this.i; }
-    @Override
-    public boolean equals(Object that) {
-        if (!(that instanceof IntVal)) return false;
-        return this.i == ((IntVal) that).i;
-    }
-    @Override
-    public String toString() {
-        return "" + this.i;
-    }
-}
-
-/**
- * Strings.
- */
-class StringVal implements Value {
-    private String s;
-    public StringVal(String s) { this.s = s; }
-    public Type getType() {
-        return StringType.singleton;
-    }
-    @Override
-    public boolean equals(Object that) {
-        if (!(that instanceof StringVal)) return false;
-        return this.s.equals(((StringVal)that).s);
-    }
-    @Override
-    public String toString() {
-        //return "'" + this.s + "'";
-        return this.s;
-    }
-}
-
-class UnitVal implements Value {
-    public static final UnitVal singleton = new UnitVal();
-
-    public Type getType() {
-        return UnitType.singleton;
-    }
-    @Override
-    public boolean equals(Object that) {
-        return (that instanceof UnitVal);
-    }
-    @Override
-    public String toString() {
-        return "()";
-    }
-}
-
-/**
  * A closure.
  * Note that a closure remembers its surrounding scope.
  */
@@ -158,5 +100,63 @@ class ClosureVal implements Value {
             newEnv.createVar(varName, v);
         }
         return body.evaluate(newEnv);
+    }
+}
+
+/**
+ * Numbers.  Only integers are supported.
+ */
+class IntVal implements Value {
+    private int i;
+    public IntVal(int i) { this.i = i; }
+    public Type getType() {
+        return IntType.singleton;
+    }
+    public int toInt() { return this.i; }
+    @Override
+    public boolean equals(Object that) {
+        if (!(that instanceof IntVal)) return false;
+        return this.i == ((IntVal) that).i;
+    }
+    @Override
+    public String toString() {
+        return "" + this.i;
+    }
+}
+
+/**
+ * Strings.
+ */
+class StringVal implements Value {
+    private String s;
+    public StringVal(String s) { this.s = s; }
+    public Type getType() {
+        return StringType.singleton;
+    }
+    @Override
+    public boolean equals(Object that) {
+        if (!(that instanceof StringVal)) return false;
+        return this.s.equals(((StringVal)that).s);
+    }
+    @Override
+    public String toString() {
+        //return "'" + this.s + "'";
+        return this.s;
+    }
+}
+
+class UnitVal implements Value {
+    public static final UnitVal singleton = new UnitVal();
+
+    public Type getType() {
+        return UnitType.singleton;
+    }
+    @Override
+    public boolean equals(Object that) {
+        return (that instanceof UnitVal);
+    }
+    @Override
+    public String toString() {
+        return "()";
     }
 }
