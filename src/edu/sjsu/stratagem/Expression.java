@@ -1,6 +1,7 @@
 package edu.sjsu.stratagem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -126,7 +127,7 @@ class FunctionAppExpr implements Expression {
         Type fType = f.typecheck(env);
 
         if (!(fType instanceof ClosureType)) {
-            throw new StratagemException("Not a function: " + f);
+            throw new StratagemException("Not a function: " + fType.toString());
         }
         ClosureType closureType = (ClosureType) fType;
 
@@ -136,8 +137,8 @@ class FunctionAppExpr implements Expression {
         }
 
         Type[] closureArgTypes = closureType.getArgTypes();
-        if (!closureArgTypes.equals(argTypes)) {
-            throw new StratagemException("Incorrect argument types, expected: " + closureArgTypes + ", got: " + argTypes);
+        if (!Arrays.equals(closureArgTypes, argTypes)) {
+            throw new StratagemException("Incorrect argument types, expected: " + Arrays.toString(closureArgTypes) + ", got: " + Arrays.toString(argTypes));
         }
 
         return closureType.getReturnType();
@@ -145,7 +146,7 @@ class FunctionAppExpr implements Expression {
 
     public Value evaluate(Environment<Value> env) {
         ClosureVal closure = (ClosureVal) f.evaluate(env);
-        List<Value> argVals = new ArrayList<Value>();
+        List<Value> argVals = new ArrayList<>();
         for (Expression arg : args) {
             argVals.add(arg.evaluate(env));
         }
@@ -158,24 +159,25 @@ class FunctionAppExpr implements Expression {
  */
 class FunctionDeclExpr implements Expression {
     private static final String[] stringArrayHint = new String[0];
+    private static final Type[] typeArrayHint = new Type[0];
 
     private String[] paramNames;
     private Type[] paramTypes;
     private Type returnType;  // Type that the programmer ascribed within the Stratagem code.
     private Expression body;
 
-    public FunctionDeclExpr(String[] params, Expression body) {
-        this.paramNames = params;
-        // TODO: Add paramTypes
+    public FunctionDeclExpr(String[] paramNames, Type[] paramTypes, Type returnType, Expression body) {
+        this.paramNames = paramNames;
+        this.paramTypes = paramTypes;
+        this.returnType = returnType;
         this.body = body;
-        // TODO: Add returnType
     }
 
-    public FunctionDeclExpr(List<String> params, Expression body) {
-        this.paramNames = params.toArray(stringArrayHint);
-        // TODO: Add paramTypes
+    public FunctionDeclExpr(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body) {
+        this.paramNames = paramNames.toArray(stringArrayHint);
+        this.paramTypes = paramTypes.toArray(typeArrayHint);
+        this.returnType = returnType;
         this.body = body;
-        // TODO: Add returnType
     }
 
     public Type typecheck(Environment<Type> outerEnv) {
@@ -188,7 +190,7 @@ class FunctionDeclExpr implements Expression {
             throw new StratagemException(
                     "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
         }
-        return bodyT;
+        return new ClosureType(paramTypes[0], returnType);
     }
 
     public Value evaluate(Environment<Value> env) {

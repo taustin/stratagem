@@ -75,12 +75,16 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 
 	@Override
 	public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
-		List<String> params = new ArrayList<>();
-		for (int i=1; i<ctx.params().getChildCount()-1; i+=2) {
-			params.add(ctx.params().getChild(i).getText());
-		}
+		List<String> paramNames = new ArrayList<>();
+		paramNames.add(ctx.params().ID().getText());
+
+		List<Type> paramTypes = new ArrayList<>();
+		paramTypes.add(parseType(ctx.params().type()));
+
+		Type returnType = parseType(ctx.type());
 		Expression body = visit(ctx.seq());
-		return new FunctionDeclExpr(params, body);
+
+		return new FunctionDeclExpr(paramNames, paramTypes, returnType, body);
 	}
 
 	@Override
@@ -107,11 +111,18 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	public Expression visitLet(StratagemParser.LetContext ctx) {
 		String id = ctx.ID().getText();
 		Expression value = visit(ctx.expr(0));
-		Expression next = visit(ctx.expr(1));
+		Expression body = visit(ctx.expr(1));
 
-		List<String> params = new ArrayList<>();
-		params.add(id);
-		FunctionDeclExpr implicitDecl = new FunctionDeclExpr(params, next);
+		List<String> paramNames = new ArrayList<>();
+		List<Type> paramTypes = new ArrayList<>();
+
+		paramNames.add(id);
+		paramTypes.add(parseType(ctx.type()));
+
+		// FIXME: Need to determine return type somehow. Add an explicit annotation in the grammar?
+		Type returnType = null;
+
+		FunctionDeclExpr implicitDecl = new FunctionDeclExpr(paramNames, paramTypes, returnType, body);
 
 		List<Expression> args = new ArrayList<>();
 		args.add(value);
@@ -148,5 +159,33 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 	@Override
 	public Expression visitUnit(StratagemParser.UnitContext ctx) {
 		return new ValueExpr(UnitVal.singleton);
+	}
+
+	private Type parseType(StratagemParser.TypeContext ctx) {
+		if (ctx.type_prim() != null) {
+			return parsePrimitiveType(ctx.type_prim());
+		} else {
+			return parseClosureType(ctx.type_fun());
+		}
+	}
+
+	private Type parsePrimitiveType(StratagemParser.Type_primContext ctx) {
+		if (ctx.TYPE_BOOL() != null) {
+			return BoolType.singleton;
+		} else if (ctx.TYPE_INT() != null) {
+			return IntType.singleton;
+		} else if (ctx.TYPE_STRING() != null) {
+			return StringType.singleton;
+		} else if (ctx.UNIT() != null) {
+			return UnitType.singleton;
+		} else {
+			throw new StratagemException("Unknown primitive type");
+		}
+	}
+
+	private Type parseClosureType(StratagemParser.Type_funContext ctx) {
+	    Type arg = parsePrimitiveType(ctx.type_prim());
+	    Type ret = parseType(ctx.type());
+	    return new ClosureType(arg, ret);
 	}
 }
