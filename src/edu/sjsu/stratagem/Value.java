@@ -40,48 +40,46 @@ class BoolVal implements Value {
  */
 class ClosureVal implements Value {
     private static final String[] stringArrayHint = new String[0];
+    private static final Type[] typeArrayHint = new Type[0];
 
     private String[] paramNames;
     private Type[] paramTypes;
+    private Type returnType;
     private Expression body;
-    private Environment<Value> outerEnvValues;
-    private Environment<Type> outerEnvTypes;
+    private Environment<Value> outerEnv;
 
     /**
      * The environment is the environment where the function was created.
      * This design is what makes this expression a closure.
      */
-    public ClosureVal(String[] params, Expression body, Environment<Value> env) {
-        this.paramNames = params;
-        // TODO: Add paramTypes
+    public ClosureVal(String[] paramNames, Type[] paramTypes, Type returnType, Expression body, Environment<Value> outerEnv) {
+        this.paramNames = paramNames;
+        this.paramTypes = paramTypes;
+        this.returnType = returnType;
         this.body = body;
-        this.outerEnvValues = env;
-        // TODO: Add outerEnvTypes
+        this.outerEnv = outerEnv;
     }
 
-    public ClosureVal(List<String> params, Expression body, Environment<Value> env) {
-        this.paramNames = params.toArray(stringArrayHint);
+    public ClosureVal(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body, Environment<Value> outerEnv) {
+        this.paramNames = paramNames.toArray(stringArrayHint);
+        this.paramTypes = paramTypes.toArray(typeArrayHint);
+        this.returnType = returnType;
         this.body = body;
-        this.outerEnvValues = env;
+        this.outerEnv = outerEnv;
     }
 
     public Type getType() {
-        Environment<Type> innerEnv = new Environment<>(outerEnvTypes);
-        for (int i = 0; i < paramNames.length; i++) {
-            innerEnv.createVar(paramNames[i], paramTypes[i]);
-        }
-        return new ClosureType(paramTypes[0], body.typecheck(innerEnv));
+        return new ClosureType(paramTypes[0], returnType);
     }
 
     public String toString() {
-        // TODO: Print type annotations.
         StringBuilder s = new StringBuilder("function(");
         String sep = "";
         for (int i = 0; i < paramNames.length; i++) {
             s.append(sep).append(paramNames[i]).append(": ").append(paramTypes[i]);
-            sep = ",";
+            sep = ", ";
         }
-        s.append("): ").append(body.typecheck(outerEnvTypes)).append(" {...};");
+        s.append("): ").append(returnType).append(" {...}");
 
         return s.toString();
     }
@@ -93,7 +91,7 @@ class ClosureVal implements Value {
      */
     public Value apply(List<Value> argVals) {
         assert argVals.size() == paramNames.length;
-        Environment<Value> newEnv = new Environment<>(outerEnvValues);
+        Environment<Value> newEnv = new Environment<>(outerEnv);
         for (int i = 0; i < argVals.size(); i++) {
             String varName = paramNames[i];
             Value v = argVals.get(i);

@@ -194,7 +194,7 @@ class FunctionDeclExpr implements Expression {
     }
 
     public Value evaluate(Environment<Value> env) {
-        return new ClosureVal(this.paramNames, this.body, env);
+        return new ClosureVal(paramNames, paramTypes, returnType, body, env);
     }
 }
 
@@ -228,14 +228,15 @@ class IfExpr implements Expression {
     }
 
     public Value evaluate(Environment<Value> env) {
-        Value v = this.cond.evaluate(env);
-        if (!(v instanceof BoolVal))
+        Value v = cond.evaluate(env);
+        if (!(v instanceof BoolVal)) {
             throw new StratagemException("Expected boolean, but got " + v);
+        }
         BoolVal bv = (BoolVal) v;
         if (bv.toBoolean()) {
-            return this.thn.evaluate(env);
+            return thn.evaluate(env);
         } else {
-            return this.els.evaluate(env);
+            return els.evaluate(env);
         }
     }
 }
