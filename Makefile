@@ -37,7 +37,7 @@ parse:
 test:
 	java -cp ${BUILD_DIR}:${TEST_CLASSPATH} org.junit.runner.JUnitCore ${PACKAGE_NAME}.ExpressionTest
 
-run:
+run: all
 	$(foreach script, ${SCRIPTS}, echo "Running ${script}"; \
 		java -cp ${BUILD_DIR}:${ANTLR_JAR} ${PACKAGE_NAME}.Interpreter ${script};)
 
