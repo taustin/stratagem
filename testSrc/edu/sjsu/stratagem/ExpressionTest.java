@@ -26,13 +26,13 @@ public class ExpressionTest {
         assertEquals(v, e.evaluate(env));
     }
 
-    @Test
+    @Test(expected=StratagemException.class)
     public void testVarNotFoundExpr() {
         Environment<Value> env = new Environment<>();
         Value v = new IntVal(3);
         env.updateVar("x", v);
         Expression e = new VarExpr("y");
-        assertEquals(UnitVal.singleton, e.evaluate(env));
+        e.evaluate(env);
     }
 
     @Test
@@ -93,9 +93,12 @@ public class ExpressionTest {
     // (function(x) { x; })(321);
     public void testIdFunction() {
         Environment<Value> env = new Environment<>();
-        List<String> params = new ArrayList<>();
-        params.add("x");
-        FunctionDeclExpr f = new FunctionDeclExpr(params, new VarExpr("x"));
+        List<String> paramNames = new ArrayList<>();
+        paramNames.add("x");
+        FunctionDeclExpr f = new FunctionDeclExpr(paramNames,
+                new ArrayList<>(),
+                null,
+                new VarExpr("x"));
         List<Expression> args = new ArrayList<>();
         args.add(new ValueExpr(new IntVal(321)));
         FunctionAppExpr app = new FunctionAppExpr(f,args);
@@ -110,6 +113,8 @@ public class ExpressionTest {
         params.add("x");
         params.add("y");
         FunctionDeclExpr f = new FunctionDeclExpr(params,
+                new ArrayList<>(),
+                null,
                 new BinOpExpr(Op.DIVIDE,
                         new VarExpr("x"),
                         new VarExpr("y")));
@@ -129,9 +134,13 @@ public class ExpressionTest {
         Environment<Value> env = new Environment<>();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 new String[] {"unused"},
+                null,
+                null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
                 new String[] {"name"},
+                null,
+                null,
                 new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
@@ -150,9 +159,13 @@ public class ExpressionTest {
         Environment<Value> env = new Environment<>();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 new String[] {"name"},
+                null,
+                null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
                 new String[] {"name"},
+                null,
+                null,
                 new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
@@ -171,9 +184,13 @@ public class ExpressionTest {
         Environment<Value> env = new Environment<>();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 new String[] {"name"},
+                null,
+                null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
                 new String[] {"name"},
+                null,
+                null,
                 new SeqExpr(new Expression[] {
                         new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }),
                         new VarExpr("name")
