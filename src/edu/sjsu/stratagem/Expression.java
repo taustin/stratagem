@@ -248,6 +248,10 @@ class PrintExpr implements Expression {
         this.arg = arg;
     }
 
+    public Type typecheck(Environment<Type> env) {
+        return UnitType.singleton;
+    }
+
     public Value evaluate(Environment<Value> env) {
         Value value = arg.evaluate(env);
         print(value);
