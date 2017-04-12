@@ -1,6 +1,7 @@
 package edu.sjsu.stratagem;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import edu.sjsu.stratagem.parser.StratagemLexer;
@@ -13,15 +14,19 @@ public class Interpreter {
 
     public static void main(String[] args) throws Exception {
         String inputFile = null;
-        if (args.length>0) inputFile = args[0];
+        if (args.length > 0) {
+            inputFile = args[0];
+        }
         InputStream is = System.in;
-        if (inputFile!=null) is = new FileInputStream(inputFile);
+        if (inputFile != null) {
+            is = new FileInputStream(inputFile);
+        }
 
         ANTLRInputStream input = new ANTLRInputStream(is);
         StratagemLexer lexer = new StratagemLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         StratagemParser parser = new StratagemParser(tokens);
-        ParseTree tree = parser.prog(); // parse
+        ParseTree tree = parser.prog();  // parse
 
         ExpressionBuilderVisitor builder = new ExpressionBuilderVisitor();
         Expression prog = builder.visit(tree);
