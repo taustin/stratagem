@@ -30,6 +30,8 @@ public class Interpreter {
 
         ExpressionBuilderVisitor builder = new ExpressionBuilderVisitor();
         Expression prog = builder.visit(tree);
+
+        Type t = prog.typecheck(new Environment<>());
         Value v = prog.evaluate(new Environment<>());
 
         System.out.println(v);
