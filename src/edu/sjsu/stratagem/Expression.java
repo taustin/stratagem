@@ -279,6 +279,10 @@ class SeqExpr implements Expression {
         this.exprs = exprs.toArray(expressionArrayHint);
     }
 
+    public Type typecheck(Environment<Type> env) {
+        return exprs[exprs.length - 1].typecheck(env);
+    }
+
     public Value evaluate(Environment<Value> env) {
         Value value = UnitVal.singleton;
         for (Expression e : exprs) {
