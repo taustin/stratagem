@@ -10,7 +10,7 @@ public interface Expression {
     /**
      * Evaluate the expression in the context of the specified environment.
      */
-    public Value evaluate(Environment env);
+    Value evaluate(Environment env);
 }
 
 // NOTE: Using package access so that all implementations of Expression
@@ -42,6 +42,8 @@ class VarExpr implements Expression {
     }
 }
 
+
+
 /**
  * Binary operators (+, -, *, etc).
  * Currently only numbers are supported.
@@ -55,7 +57,7 @@ class BinOpExpr implements Expression {
         this.e1 = e1;
         this.e2 = e2;
     }
-    
+
     @SuppressWarnings("incomplete-switch")
     public Value evaluate(Environment env) {
         Value v1 = e1.evaluate(env);
@@ -144,7 +146,7 @@ class SeqExpr implements Expression {
         this.exprs = exprs.toArray(expressionArrayHint);
     }
     public Value evaluate(Environment env) {
-        Value value = new UnitVal();
+        Value value = UnitVal.singleton;
         for (Expression e : exprs) {
             value = e.evaluate(env);
         }
@@ -196,5 +198,26 @@ class FunctionAppExpr implements Expression {
             argVals.add(arg.evaluate(env));
         }
         return closure.apply(argVals);
+    }
+}
+
+/**
+ * Print expression. Hard to express in the type system, so we make it a language-level construct.
+ */
+class PrintExpr implements Expression {
+    private Expression arg;
+
+    public PrintExpr(Expression arg) {
+        this.arg = arg;
+    }
+
+    public Value evaluate(Environment env) {
+        Value value = arg.evaluate(env);
+        print(value);
+        return UnitVal.singleton;
+    }
+
+    private void print(Value value) {
+        System.out.println(value.toString());
     }
 }

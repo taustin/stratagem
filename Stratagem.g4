@@ -9,8 +9,11 @@ IF       : 'if' ;
 ELSE     : 'else' ;
 LET      : 'let' ;
 
-// Both a type and a literal
-UNIT      : '()' ;
+// Literals
+LIT_INT    : [1-9][0-9]* | '0' ;
+LIT_BOOL   : 'true' | 'false' ;
+LIT_STRING : '"' ( ESC | . )*? '"' ;
+fragment ESC : '\\' [tnr"\\] ;  // Matches: \t \n \r \" \\
 
 // Types
 TYPE_INT       : 'Int' ;
@@ -18,10 +21,8 @@ TYPE_BOOL      : 'Bool' ;
 TYPE_STRING    : 'String' ;
 TYPE_FUN       : '->' ;
 
-// Literals
-LIT_INT    : [1-9][0-9]* | '0' ;
-LIT_BOOL   : 'true' | 'false' ;
-LIT_STRING : '"' ( [^"] | '\\"' )* '"' ;
+// Both a type and a literal
+UNIT      : '()' ;
 
 // Binary operators
 MUL       : '*' ;
@@ -36,7 +37,18 @@ LE        : '<=' ;
 EQ        : '==' ;
 NE        : '!=' ;
 
+// Built-in functions
+PRINT : 'print' ;
+
+// Misc syntax & keywords
 SEPARATOR : ';' ;
+COLON : ':' ;
+LPAREN : '(' ;
+RPAREN : ')' ;
+LBRACE : '{' ;
+RBRACE : '}' ;
+ASSIGN : '=' ;
+IN : 'in' ;
 
 // Identifiers
 ID : [a-zA-Z_] [a-zA-Z0-9_]* ;
@@ -46,7 +58,8 @@ ID : [a-zA-Z_] [a-zA-Z0-9_]* ;
 NEWLINE       : '\r'? '\n' -> skip ;
 BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
 LINE_COMMENT  : '//' ~[\n\r]* -> skip ;
-WS            : [ \t]+ -> skip ; // ignore whitespace
+WS            : [ \t]+ -> skip ;  // ignore whitespace
+
 
 
 // *** Parsing rules ***
@@ -56,24 +69,25 @@ prog: seq ;
 
 seq: expr (SEPARATOR expr)* ;
 
-expr: expr args                                         # functionApp
-    | FUNCTION params ':' type '{' seq '}'              # functionDecl
-    | LIT_INT                                           # int
-    | LIT_BOOL                                          # bool
-    | LIT_STRING                                        # string
-    | UNIT                                              # unit
-    | ID                                                # id
-    | IF '(' expr ')' '{' seq '}' ELSE '{' seq '}'      # if
-    | LET ID ':' type '=' expr 'in' expr                # let
-    | expr op=( MUL | DIV | MOD ) expr                  # MulDivMod
-    | expr op=( ADD | SUB ) expr                        # AddSub
-    | expr op=( GT | GE | LT | LE | EQ | NE ) expr      # Comparison
+expr: expr args                                                       # functionApp
+    | FUNCTION params COLON type LBRACE seq RBRACE                    # functionDecl
+    | LIT_INT                                                         # int
+    | LIT_BOOL                                                        # bool
+    | LIT_STRING                                                      # string
+    | UNIT                                                            # unit
+    | ID                                                              # id
+    | IF LPAREN expr RPAREN LBRACE seq RBRACE ELSE LBRACE seq RBRACE  # if
+    | LET ID COLON type ASSIGN expr IN expr                           # let
+    | expr op=( MUL | DIV | MOD ) expr                                # MulDivMod
+    | expr op=( ADD | SUB ) expr                                      # AddSub
+    | expr op=( GT | GE | LT | LE | EQ | NE ) expr                    # Comparison
+    | PRINT args                                                      # print
     ;
 
-params: '(' ID ':' type ')'
+params: LPAREN ID COLON type RPAREN
       ;
 
-args: '(' expr ')'
+args: LPAREN expr RPAREN
     ;
 
 type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | UNIT ;

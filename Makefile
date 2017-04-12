@@ -8,7 +8,7 @@ GRAMMAR_NAME=Stratagem
 GRAMMAR=${GRAMMAR_NAME}.g4
 TEST_CLASSPATH=${JUNIT_JAR}:${HAMCREST_JAR}:${ANTLR_JAR}
 STRATAGEM_SCRIPT_DIR=stratagemScripts
-SCRIPTS=examples.strata
+SCRIPTS=$(wildcard ${STRATAGEM_SCRIPT_DIR}/*)
 TREES_DIR=parseTrees
 # Choosing build instead of bin to avoid conflicts with Eclipse
 BUILD_DIR=build
@@ -31,15 +31,15 @@ generate: ${GRAMMAR}
 
 parse:
 	mkdir -p ${TREES_DIR}
-	$(foreach script, ${SCRIPTS}, java -cp ${BUILD_DIR}:${ANTLR_JAR} org.antlr.v4.runtime.misc.TestRig \
-		${PARSER_PACKAGE_NAME}.${GRAMMAR_NAME} prog -gui ${STRATAGEM_SCRIPT_DIR}/${script} > ${TREES_DIR}/${script}.tree;)
+	$(foreach script, ${SCRIPTS}, java -cp ${BUILD_DIR}:${ANTLR_JAR} org.antlr.v4.gui.TestRig \
+		${PARSER_PACKAGE_NAME}.${GRAMMAR_NAME} prog -gui ${script} > ${TREES_DIR}/$(notdir ${script}).tree;)
 
 test:
 	java -cp ${BUILD_DIR}:${TEST_CLASSPATH} org.junit.runner.JUnitCore ${PACKAGE_NAME}.ExpressionTest
 
 run:
-	$(foreach script, ${SCRIPTS}, echo "Running ${STRATAGEM_SCRIPT_DIR}/${script}"; \
-		java -cp ${BUILD_DIR}:${ANTLR_JAR} ${PACKAGE_NAME}.Interpreter ${STRATAGEM_SCRIPT_DIR}/${script};)
+	$(foreach script, ${SCRIPTS}, echo "Running ${script}"; \
+		java -cp ${BUILD_DIR}:${ANTLR_JAR} ${PACKAGE_NAME}.Interpreter ${script};)
 
 ${ZIP_FILE}:
 	zip ${ZIP_FILE} src/${SRC_FOLDERS}/*.java ${GRAMMAR}

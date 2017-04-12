@@ -149,12 +149,18 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 
 	@Override
 	public Expression visitUnit(StratagemParser.UnitContext ctx) {
-		return new ValueExpr(new UnitVal());
+		return new ValueExpr(UnitVal.singleton);
 	}
 
 	@Override
 	public Expression visitId(StratagemParser.IdContext ctx) {
 		String id = ctx.ID().getText();
 		return new VarExpr(id);
+	}
+
+	@Override
+	public Expression visitPrint(StratagemParser.PrintContext ctx) {
+		Expression arg = visit(ctx.args().getChild(1));
+	    return new PrintExpr(arg);
 	}
 }

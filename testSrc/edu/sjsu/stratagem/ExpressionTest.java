@@ -32,7 +32,7 @@ public class ExpressionTest {
         Value v = new IntVal(3);
         env.updateVar("x", v);
         Expression e = new VarExpr("y");
-        assertEquals(new UnitVal(), e.evaluate(env));
+        assertEquals(UnitVal.singleton, e.evaluate(env));
     }
 
     @Test

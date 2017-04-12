@@ -66,6 +66,8 @@ class StringVal implements Value {
 }
 
 class UnitVal implements Value {
+    public static final UnitVal singleton = new UnitVal();
+
     @Override
     public boolean equals(Object that) {
         return (that instanceof UnitVal);
