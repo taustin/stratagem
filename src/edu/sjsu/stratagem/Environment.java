@@ -56,7 +56,7 @@ public class Environment {
      */
     public void createVar(String key, Value v) {
         if (env.containsKey(key)) {
-            throw new RuntimeException("Redeclaring existing var " + key);
+            throw new StratagemException("Redeclaring existing var " + key);
         }
         env.put(key,v);
     }

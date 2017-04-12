@@ -50,7 +50,7 @@ class BinOpExpr implements Expression {
 
         // Int operations case
         if (!(v1 instanceof IntVal && v2 instanceof IntVal))
-            throw new RuntimeException("Expected ints, but got " + v1 + " and " + v2);
+            throw new StratagemException("Expected ints, but got " + v1 + " and " + v2);
         int i = ((IntVal) v1).toInt();
         int j = ((IntVal) v2).toInt();
         switch(op) {
@@ -74,7 +74,7 @@ class BinOpExpr implements Expression {
             return new BoolVal(i <= j);
         }
 
-        throw new RuntimeException("Unrecognized operator: " + op);
+        throw new StratagemException("Unrecognized operator: " + op);
     }
 }
 
@@ -141,7 +141,7 @@ class IfExpr implements Expression {
     public Value evaluate(Environment env) {
         Value v = this.cond.evaluate(env);
         if (!(v instanceof BoolVal))
-            throw new RuntimeException("Expected boolean, but got " + v);
+            throw new StratagemException("Expected boolean, but got " + v);
         BoolVal bv = (BoolVal) v;
         if (bv.toBoolean()) {
             return this.thn.evaluate(env);
