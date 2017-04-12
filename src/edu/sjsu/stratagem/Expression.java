@@ -178,6 +178,19 @@ class FunctionDeclExpr implements Expression {
         // TODO: Add returnType
     }
 
+    public Type typecheck(Environment<Type> outerEnv) {
+        Environment<Type> innerEnv = new Environment<>(outerEnv);
+        for (int i = 0; i < paramNames.length; i++) {
+            innerEnv.createVar(paramNames[i], paramTypes[i]);
+        }
+        Type bodyT = body.typecheck(innerEnv);
+        if (!bodyT.equals(returnType)) {
+            throw new StratagemException(
+                    "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
+        }
+        return bodyT;
+    }
+
     public Value evaluate(Environment<Value> env) {
         return new ClosureVal(this.paramNames, this.body, env);
     }
