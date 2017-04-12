@@ -302,6 +302,10 @@ class ValueExpr implements Expression {
         this.val = v;
     }
 
+    public Type typecheck(Environment<Type> env) {
+        return val.getType();
+    }
+
     public Value evaluate(Environment<Value> env) {
         return this.val;
     }
