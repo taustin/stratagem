@@ -213,4 +213,20 @@ public class ExpressionTest {
         Expression exp = new BinOpExpr(Op.ADD, s1, s2);
         assertEquals(new StringVal("notable"), exp.evaluate(env));
     }
+
+    @Test
+    // fn(a: Int b: Int): Int { a + b }(1, 2)
+    public void testMultipleParameters() {
+        VarExpr a = new VarExpr("a");
+        VarExpr b = new VarExpr("b");
+        BinOpExpr add = new BinOpExpr(Op.ADD, a, b);
+        FunctionDeclExpr fnDecl = new FunctionDeclExpr( new String[] {"a", "b"}, null, null, add);
+
+        ValueExpr one = new ValueExpr(new IntVal(1));
+        ValueExpr two = new ValueExpr(new IntVal(2));
+        FunctionAppExpr app = new FunctionAppExpr(fnDecl, new Expression[] { one, two });
+
+        Value v = app.evaluate(new ValueEnvironment());
+        assertEquals(new IntVal(3), v);
+    }
 }
