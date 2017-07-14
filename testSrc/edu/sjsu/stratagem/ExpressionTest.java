@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.sjsu.stratagem.exception.StratagemException;
 import org.junit.Test;
 
 public class ExpressionTest {

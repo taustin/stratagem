@@ -1,5 +1,7 @@
 package edu.sjsu.stratagem;
 
+import edu.sjsu.stratagem.exception.StratagemException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

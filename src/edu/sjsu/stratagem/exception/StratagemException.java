@@ -1,7 +1,7 @@
-package edu.sjsu.stratagem;
+package edu.sjsu.stratagem.exception;
 
 public class StratagemException extends RuntimeException {
-    StratagemException(String message) {
+    public StratagemException(String message) {
         super(message);
     }
 }
