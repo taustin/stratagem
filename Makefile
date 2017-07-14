@@ -75,6 +75,7 @@ test: generate compile
 # Run the interpretor on all test Stratagem scripts
 run: generate compile
 	$(foreach script, ${SCRIPTS}, \
+		echo; \
 		echo "Running ${script}"; \
 		java -cp ${BUILD_DIR}:${ANTLR_JAR} \
 		     ${PACKAGE_NAME}.Interpreter ${script}; \
