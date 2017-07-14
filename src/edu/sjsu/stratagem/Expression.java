@@ -1,16 +1,26 @@
 package edu.sjsu.stratagem;
 
+import edu.sjsu.stratagem.exception.StratagemRuntimeException;
+import edu.sjsu.stratagem.exception.StratagemTypecheckException;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * FWJS expressions.
+ * Stratagem expressions.
  */
 public interface Expression {
     /**
+     * Determines the value type that evaluation of the expression will result in.
+     * Throws an exception if the expression is not well-typed.
+     */
+    Type typecheck(TypeEnvironment env);
+
+    /**
      * Evaluate the expression in the context of the specified environment.
      */
-    Value evaluate(Environment env);
+    Value evaluate(ValueEnvironment env);
 }
 
 // NOTE: Using package access so that all implementations of Expression
@@ -30,8 +40,29 @@ class BinOpExpr implements Expression {
         this.e2 = e2;
     }
 
+    public Type typecheck(TypeEnvironment env) {
+        Type t1 = e1.typecheck(env);
+        Type t2 = e2.typecheck(env);
+
+        switch (op) {
+        case EQ:
+        case NE:
+            if (!t1.equals(t2)) {
+                throw new StratagemTypecheckException(
+                        "Binary operator expected identical types, got: " + t1 + " and " + t2);
+            }
+            return BoolType.singleton;
+        default:
+            if (t1 != IntType.singleton || t2 != IntType.singleton) {
+                throw new StratagemTypecheckException(
+                        "Binary operator expected integer arguments, got: " + t1 + " and " + t2);
+            }
+            return IntType.singleton;
+        }
+    }
+
     @SuppressWarnings("incomplete-switch")
-    public Value evaluate(Environment env) {
+    public Value evaluate(ValueEnvironment env) {
         Value v1 = e1.evaluate(env);
         Value v2 = e2.evaluate(env);
 
@@ -49,8 +80,9 @@ class BinOpExpr implements Expression {
         }
 
         // Int operations case
-        if (!(v1 instanceof IntVal && v2 instanceof IntVal))
-            throw new RuntimeException("Expected ints, but got " + v1 + " and " + v2);
+        if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
+            throw new StratagemRuntimeException("Expected ints, but got " + v1 + " and " + v2);
+        }
         int i = ((IntVal) v1).toInt();
         int j = ((IntVal) v2).toInt();
         switch(op) {
@@ -74,7 +106,7 @@ class BinOpExpr implements Expression {
             return new BoolVal(i <= j);
         }
 
-        throw new RuntimeException("Unrecognized operator: " + op);
+        throw new StratagemRuntimeException("Unrecognized operator: " + op);
     }
 }
 
@@ -86,17 +118,43 @@ class FunctionAppExpr implements Expression {
 
     private Expression f;
     private Expression[] args;
+
     public FunctionAppExpr(Expression f, Expression[] args) {
         this.f = f;
         this.args = args;
     }
+
     public FunctionAppExpr(Expression f, List<Expression> args) {
         this.f = f;
         this.args = args.toArray(expressionArrayHint);
     }
-    public Value evaluate(Environment env) {
+
+    public Type typecheck(TypeEnvironment env) {
+        Type fType = f.typecheck(env);
+
+        if (!(fType instanceof ClosureType)) {
+            throw new StratagemTypecheckException("Not a function: " + fType.toString());
+        }
+        ClosureType closureType = (ClosureType) fType;
+
+        Type[] argTypes = new Type[args.length];
+        for (int i = 0; i < args.length; i++) {
+            argTypes[i] = args[i].typecheck(env);
+        }
+
+        Type[] closureArgTypes = closureType.getArgTypes();
+        if (!Arrays.equals(closureArgTypes, argTypes)) {
+            throw new StratagemTypecheckException(
+                    "Incorrect argument types, expected: " + Arrays.toString(closureArgTypes) +
+                                                 ", got: " + Arrays.toString(argTypes));
+        }
+
+        return closureType.getReturnType();
+    }
+
+    public Value evaluate(ValueEnvironment env) {
         ClosureVal closure = (ClosureVal) f.evaluate(env);
-        List<Value> argVals = new ArrayList<Value>();
+        List<Value> argVals = new ArrayList<>();
         for (Expression arg : args) {
             argVals.add(arg.evaluate(env));
         }
@@ -109,19 +167,42 @@ class FunctionAppExpr implements Expression {
  */
 class FunctionDeclExpr implements Expression {
     private static final String[] stringArrayHint = new String[0];
+    private static final Type[] typeArrayHint = new Type[0];
 
-    private String[] params;
+    private String[] paramNames;
+    private Type[] paramTypes;
+    private Type returnType;  // Type that the programmer ascribed within the Stratagem code.
     private Expression body;
-    public FunctionDeclExpr(String[] params, Expression body) {
-        this.params = params;
+
+    public FunctionDeclExpr(String[] paramNames, Type[] paramTypes, Type returnType, Expression body) {
+        this.paramNames = paramNames;
+        this.paramTypes = paramTypes;
+        this.returnType = returnType;
         this.body = body;
     }
-    public FunctionDeclExpr(List<String> params, Expression body) {
-        this.params = params.toArray(stringArrayHint);
+
+    public FunctionDeclExpr(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body) {
+        this.paramNames = paramNames.toArray(stringArrayHint);
+        this.paramTypes = paramTypes.toArray(typeArrayHint);
+        this.returnType = returnType;
         this.body = body;
     }
-    public Value evaluate(Environment env) {
-        return new ClosureVal(this.params, this.body, env);
+
+    public Type typecheck(TypeEnvironment outerEnv) {
+        TypeEnvironment innerEnv = new TypeEnvironment(outerEnv);
+        for (int i = 0; i < paramNames.length; i++) {
+            innerEnv.createVar(paramNames[i], paramTypes[i]);
+        }
+        Type bodyT = body.typecheck(innerEnv);
+        if (!bodyT.equals(returnType)) {
+            throw new StratagemTypecheckException(
+                    "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
+        }
+        return new ClosureType(paramTypes[0], returnType);
+    }
+
+    public Value evaluate(ValueEnvironment env) {
+        return new ClosureVal(paramNames, paramTypes, returnType, body, env);
     }
 }
 
@@ -133,20 +214,37 @@ class IfExpr implements Expression {
     private Expression cond;
     private Expression thn;
     private Expression els;
+
     public IfExpr(Expression cond, Expression thn, Expression els) {
         this.cond = cond;
         this.thn = thn;
         this.els = els;
     }
-    public Value evaluate(Environment env) {
-        Value v = this.cond.evaluate(env);
-        if (!(v instanceof BoolVal))
-            throw new RuntimeException("Expected boolean, but got " + v);
+
+    public Type typecheck(TypeEnvironment env) {
+        Type condT = cond.typecheck(env);
+        Type thnT = thn.typecheck(env);
+        Type elsT = els.typecheck(env);
+
+        if (condT != BoolType.singleton) {
+            throw new StratagemTypecheckException("If-expression expected boolean in condition, got: " + condT);
+        }
+        if (!thnT.equals(elsT)) {
+            throw new StratagemTypecheckException("If-expression branches have unequal type: " + thnT + " and " + elsT);
+        }
+        return thnT;
+    }
+
+    public Value evaluate(ValueEnvironment env) {
+        Value v = cond.evaluate(env);
+        if (!(v instanceof BoolVal)) {
+            throw new StratagemRuntimeException("Expected boolean, but got " + v);
+        }
         BoolVal bv = (BoolVal) v;
         if (bv.toBoolean()) {
-            return this.thn.evaluate(env);
+            return thn.evaluate(env);
         } else {
-            return this.els.evaluate(env);
+            return els.evaluate(env);
         }
     }
 }
@@ -161,7 +259,11 @@ class PrintExpr implements Expression {
         this.arg = arg;
     }
 
-    public Value evaluate(Environment env) {
+    public Type typecheck(TypeEnvironment env) {
+        return UnitType.singleton;
+    }
+
+    public Value evaluate(ValueEnvironment env) {
         Value value = arg.evaluate(env);
         print(value);
         return UnitVal.singleton;
@@ -179,13 +281,20 @@ class SeqExpr implements Expression {
     private static final Expression[] expressionArrayHint = new Expression[0];
 
     private Expression[] exprs;
+
     public SeqExpr(Expression[] exprs) {
         this.exprs = exprs;
     }
+
     public SeqExpr(List<Expression> exprs) {
         this.exprs = exprs.toArray(expressionArrayHint);
     }
-    public Value evaluate(Environment env) {
+
+    public Type typecheck(TypeEnvironment env) {
+        return exprs[exprs.length - 1].typecheck(env);
+    }
+
+    public Value evaluate(ValueEnvironment env) {
         Value value = UnitVal.singleton;
         for (Expression e : exprs) {
             value = e.evaluate(env);
@@ -195,27 +304,39 @@ class SeqExpr implements Expression {
 }
 
 /**
- * FWJS constants.
+ * Stratagem constants.
  */
 class ValueExpr implements Expression {
     private Value val;
+
     public ValueExpr(Value v) {
         this.val = v;
     }
-    public Value evaluate(Environment env) {
+
+    public Type typecheck(TypeEnvironment env) {
+        return val.getType();
+    }
+
+    public Value evaluate(ValueEnvironment env) {
         return this.val;
     }
 }
 
 /**
- * Expressions that are a FWJS variable.
+ * Expressions that are a Stratagem variable.
  */
 class VarExpr implements Expression {
     private String varName;
+
     public VarExpr(String varName) {
         this.varName = varName;
     }
-    public Value evaluate(Environment env) {
+
+    public Type typecheck(TypeEnvironment env) {
+        return env.resolveVar(varName);
+    }
+
+    public Value evaluate(ValueEnvironment env) {
         return env.resolveVar(varName);
     }
 }

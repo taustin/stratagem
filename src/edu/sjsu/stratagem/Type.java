@@ -1,8 +1,8 @@
 package edu.sjsu.stratagem;
 
 /**
- * Types in FWJS.
- * Evaluating a FWJS expression should return a FWJS value.
+ * Types in Stratagem.
+ * Typechecking a Stratagem expression should return a Stratagem type.
  */
 public interface Type {}
 
@@ -13,10 +13,8 @@ public interface Type {}
  * Boolean types.
  */
 class BoolType implements Type {
-    @Override
-    public boolean equals(Object that) {
-        return that instanceof BoolType;
-    }
+    public static final BoolType singleton = new BoolType();
+
     @Override
     public String toString() {
         return "Bool";
@@ -27,10 +25,8 @@ class BoolType implements Type {
  * Numbers. Only integers are supported.
  */
 class IntType implements Type {
-    @Override
-    public boolean equals(Object that) {
-        return that instanceof IntType;
-    }
+    public static final IntType singleton = new IntType();
+
     @Override
     public String toString() {
         return "Int";
@@ -41,10 +37,8 @@ class IntType implements Type {
  * Strings.
  */
 class StringType implements Type {
-    @Override
-    public boolean equals(Object that) {
-        return that instanceof StringType;
-    }
+    public static final StringType singleton = new StringType();
+
     @Override
     public String toString() {
         return "String";
@@ -55,10 +49,8 @@ class StringType implements Type {
  * Type for the Unit value.
  */
 class UnitType implements Type {
-    @Override
-    public boolean equals(Object that) {
-        return (that instanceof UnitVal);
-    }
+    public static final UnitType singleton = new UnitType();
+
     @Override
     public String toString() {
         return "()";
@@ -66,20 +58,36 @@ class UnitType implements Type {
 }
 
 /**
- * A function's type. Functions take one argument and have one return value.
+ * A closure's type. Closures take one argument and have one return value.
  */
-class FunctionType implements Type {
+class ClosureType implements Type {
     private Type arg;
     private Type ret;
 
-    public FunctionType(Type arg, Type ret) {
+    public ClosureType(Type arg, Type ret) {
         this.arg = arg;
         this.ret = ret;
     }
+
+    public Type[] getArgTypes() {
+        return new Type[] {
+                arg
+        };
+    }
+
+    public Type getReturnType() {
+        return ret;
+    }
+
     @Override
     public boolean equals(Object that) {
-        return (that instanceof UnitVal);
+        if (!(that instanceof ClosureType)) {
+            return false;
+        }
+        ClosureType other = (ClosureType) that;
+        return arg.equals(other.arg) && ret.equals(other.ret);
     }
+
     @Override
     public String toString() {
         return arg + " -> " + ret;

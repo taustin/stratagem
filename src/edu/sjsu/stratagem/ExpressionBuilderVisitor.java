@@ -3,59 +3,23 @@ package edu.sjsu.stratagem;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.sjsu.stratagem.exception.StratagemException;
 import edu.sjsu.stratagem.parser.StratagemBaseVisitor;
 import edu.sjsu.stratagem.parser.StratagemParser;
 
 public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
-	@Override
-	public Expression visitProg(StratagemParser.ProgContext ctx) {
-		return visit(ctx.seq());
-	}
-
-	@Override
-	public Expression visitSeq(StratagemParser.SeqContext ctx) {
-		List<Expression> exprs = new ArrayList<>();
-		for (int i=0; i<ctx.expr().size(); i++) {
-			Expression exp = visit(ctx.expr(i));
-			if (exp != null) exprs.add(exp);
-		}
-		return new SeqExpr(exprs);
-	}
-
-	@Override
-	public Expression visitIf(StratagemParser.IfContext ctx) {
-		Expression cond = visit(ctx.expr());
-		Expression thn = visit(ctx.seq(0));
-		Expression els = visit(ctx.seq(1));
-		return new IfExpr(cond, thn, els);
-	}
-
-	@Override
-	public Expression visitMulDivMod(StratagemParser.MulDivModContext ctx) {
+    @Override
+    public Expression visitBinOp(StratagemParser.BinOpContext ctx) {
 		Expression lhs = visit(ctx.expr(0));
 		Expression rhs = visit(ctx.expr(1));
 		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
-	}
+    }
 
-	@Override
-	public Expression visitAddSub(StratagemParser.AddSubContext ctx) {
-		Expression lhs = visit(ctx.expr(0));
-		Expression rhs = visit(ctx.expr(1));
-		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
-	}
-
-	@Override
-	public Expression visitComparison(StratagemParser.ComparisonContext ctx) {
-		Expression lhs = visit(ctx.expr(0));
-		Expression rhs = visit(ctx.expr(1));
-		return binOpExpHelper(ctx.op.getType(), lhs, rhs);
-	}
-
-	/**
-	 * Converts binops from parser to binops from  interpreter,
-	 * and then build a BinOpExpr.
-	 */
-	private BinOpExpr binOpExpHelper(int type, Expression lhs, Expression rhs) {
+    /**
+     * Converts binops from parser to binops from  interpreter,
+     * and then build a BinOpExpr.
+     */
+    private BinOpExpr binOpExpHelper(int type, Expression lhs, Expression rhs) {
 		Op op = null;
 		switch (type) {
 		case StratagemParser.ADD:
@@ -93,74 +57,136 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 			break;
 		}
 		return new BinOpExpr(op, lhs, rhs);
-	}
+    }
 
-	@Override
-	public Expression visitFunctionApp(StratagemParser.FunctionAppContext ctx) {
+    @Override
+    public Expression visitBool(StratagemParser.BoolContext ctx) {
+		boolean val = Boolean.valueOf(ctx.LIT_BOOL().getText());
+		return new ValueExpr(new BoolVal(val));
+    }
+
+    @Override
+    public Expression visitFunctionApp(StratagemParser.FunctionAppContext ctx) {
 		Expression f = visit(ctx.expr());
 		List<Expression> args = new ArrayList<>();
 		Expression arg = visit(ctx.args().getChild(1));
 		args.add(arg);
 		return new FunctionAppExpr(f, args);
-	}
+    }
 
-	@Override
-	public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
-		List<String> params = new ArrayList<>();
-		for (int i=1; i<ctx.params().getChildCount()-1; i+=2) {
-			params.add(ctx.params().getChild(i).getText());
-		}
+    @Override
+    public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
+		List<String> paramNames = new ArrayList<>();
+		paramNames.add(ctx.params().ID().getText());
+
+		List<Type> paramTypes = new ArrayList<>();
+		paramTypes.add(parseType(ctx.params().type()));
+
+		Type returnType = parseType(ctx.type());
 		Expression body = visit(ctx.seq());
-		return new FunctionDeclExpr(params, body);
-	}
 
-	@Override
-	public Expression visitLet(StratagemParser.LetContext ctx) {
+		return new FunctionDeclExpr(paramNames, paramTypes, returnType, body);
+    }
+
+    @Override
+    public Expression visitId(StratagemParser.IdContext ctx) {
+		String id = ctx.ID().getText();
+		return new VarExpr(id);
+    }
+
+    @Override
+    public Expression visitIf(StratagemParser.IfContext ctx) {
+		Expression cond = visit(ctx.expr());
+		Expression thn = visit(ctx.seq(0));
+		Expression els = visit(ctx.seq(1));
+		return new IfExpr(cond, thn, els);
+    }
+
+    @Override
+    public Expression visitInt(StratagemParser.IntContext ctx) {
+		int val = Integer.valueOf(ctx.LIT_INT().getText());
+		return new ValueExpr(new IntVal(val));
+    }
+
+    @Override
+    public Expression visitLet(StratagemParser.LetContext ctx) {
 		String id = ctx.ID().getText();
 		Expression value = visit(ctx.expr(0));
-		Expression next = visit(ctx.expr(1));
+		Expression body = visit(ctx.expr(1));
 
-		List<String> params = new ArrayList<>();
-		params.add(id);
-		FunctionDeclExpr implicitDecl = new FunctionDeclExpr(params, next);
+		List<String> paramNames = new ArrayList<>();
+		List<Type> paramTypes = new ArrayList<>();
+
+		paramNames.add(id);
+		paramTypes.add(parseType(ctx.type()));
+
+		// FIXME: Need to determine return type somehow. Add an explicit annotation in the grammar?
+		Type returnType = null;
+
+		FunctionDeclExpr implicitDecl = new FunctionDeclExpr(paramNames, paramTypes, returnType, body);
 
 		List<Expression> args = new ArrayList<>();
 		args.add(value);
 		return new FunctionAppExpr(implicitDecl, args);
-	}
+    }
 
-	@Override
-	public Expression visitInt(StratagemParser.IntContext ctx) {
-		int val = Integer.valueOf(ctx.LIT_INT().getText());
-		return new ValueExpr(new IntVal(val));
-	}
+    @Override
+    public Expression visitPrint(StratagemParser.PrintContext ctx) {
+		Expression arg = visit(ctx.args().getChild(1));
+        return new PrintExpr(arg);
+    }
 
-	@Override
-	public Expression visitBool(StratagemParser.BoolContext ctx) {
-		boolean val = Boolean.valueOf(ctx.LIT_BOOL().getText());
-		return new ValueExpr(new BoolVal(val));
-	}
+    @Override
+    public Expression visitProg(StratagemParser.ProgContext ctx) {
+		return visit(ctx.seq());
+    }
 
-	@Override
-	public Expression visitString(StratagemParser.StringContext ctx) {
+    @Override
+    public Expression visitSeq(StratagemParser.SeqContext ctx) {
+		List<Expression> exprs = new ArrayList<>();
+		for (int i=0; i<ctx.expr().size(); i++) {
+			Expression exp = visit(ctx.expr(i));
+			if (exp != null) exprs.add(exp);
+		}
+		return new SeqExpr(exprs);
+    }
+
+    @Override
+    public Expression visitString(StratagemParser.StringContext ctx) {
 		String val = ctx.LIT_STRING().getText();
 		return new ValueExpr(new StringVal(val));
-	}
+    }
 
-	@Override
-	public Expression visitUnit(StratagemParser.UnitContext ctx) {
+    @Override
+    public Expression visitUnit(StratagemParser.UnitContext ctx) {
 		return new ValueExpr(UnitVal.singleton);
-	}
+    }
 
-	@Override
-	public Expression visitId(StratagemParser.IdContext ctx) {
-		String id = ctx.ID().getText();
-		return new VarExpr(id);
-	}
+    private Type parseType(StratagemParser.TypeContext ctx) {
+		if (ctx.type_prim() != null) {
+			return parsePrimitiveType(ctx.type_prim());
+		} else {
+			return parseClosureType(ctx.type_fun());
+		}
+    }
 
-	@Override
-	public Expression visitPrint(StratagemParser.PrintContext ctx) {
-		Expression arg = visit(ctx.args().getChild(1));
-	    return new PrintExpr(arg);
-	}
+    private Type parsePrimitiveType(StratagemParser.Type_primContext ctx) {
+		if (ctx.TYPE_BOOL() != null) {
+			return BoolType.singleton;
+		} else if (ctx.TYPE_INT() != null) {
+			return IntType.singleton;
+		} else if (ctx.TYPE_STRING() != null) {
+			return StringType.singleton;
+		} else if (ctx.UNIT() != null) {
+			return UnitType.singleton;
+		} else {
+			throw new StratagemException("Unknown primitive type");
+		}
+    }
+
+    private Type parseClosureType(StratagemParser.Type_funContext ctx) {
+        Type arg = parsePrimitiveType(ctx.type_prim());
+        Type ret = parseType(ctx.type());
+        return new ClosureType(arg, ret);
+    }
 }

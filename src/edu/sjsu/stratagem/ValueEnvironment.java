@@ -1,21 +1,26 @@
 package edu.sjsu.stratagem;
 
+import edu.sjsu.stratagem.exception.StratagemRuntimeException;
+
 import java.util.Map;
 import java.util.HashMap;
 
-public class Environment {
-    private Map<String,Value> env = new HashMap<String,Value>();
-    private Environment outerEnv;
+/**
+ * A variable environment for the runtime of the program.
+ */
+public class ValueEnvironment {
+    private Map<String,Value> env = new HashMap<>();
+    private ValueEnvironment outerEnv;
 
     /**
      * Constructor for global environment
      */
-    public Environment() {}
+    public ValueEnvironment() {}
 
     /**
      * Constructor for local environment of a function
      */
-    public Environment(Environment outerEnv) {
+    public ValueEnvironment(ValueEnvironment outerEnv) {
         this.outerEnv = outerEnv;
     }
 
@@ -30,7 +35,7 @@ public class Environment {
         if (env.containsKey(varName)) {
             return env.get(varName);
         } else if (outerEnv == null) {
-            return UnitVal.singleton;
+            throw new StratagemRuntimeException("Unbound variable: " + varName);
         } else {
             return outerEnv.resolveVar(varName);
         }
@@ -52,11 +57,11 @@ public class Environment {
     /**
      * Creates a new variable in the local scope.
      * If the variable has been defined in the current scope previously,
-     * a RuntimeException is thrown.
+     * a StratagemException is thrown.
      */
     public void createVar(String key, Value v) {
         if (env.containsKey(key)) {
-            throw new RuntimeException("Redeclaring existing var " + key);
+            throw new StratagemRuntimeException("Redeclaring existing var " + key);
         }
         env.put(key,v);
     }
