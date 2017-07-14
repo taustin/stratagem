@@ -77,8 +77,9 @@ class BinOpExpr implements Expression {
         }
 
         // Int operations case
-        if (!(v1 instanceof IntVal && v2 instanceof IntVal))
+        if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
             throw new StratagemException("Expected ints, but got " + v1 + " and " + v2);
+        }
         int i = ((IntVal) v1).toInt();
         int j = ((IntVal) v2).toInt();
         switch(op) {
