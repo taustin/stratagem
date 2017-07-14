@@ -43,6 +43,7 @@ PRINT : 'print' ;
 // Misc syntax & keywords
 SEPARATOR : ';' ;
 COLON : ':' ;
+COMMA : ',' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
 LBRACE : '{' ;
@@ -82,11 +83,11 @@ expr: expr args                                                                 
     | PRINT args                                                                  # print
     ;
 
-params: LPAREN ID COLON type RPAREN
-      ;
+params: LPAREN (param (COMMA param)*)? RPAREN ;
 
-args: LPAREN expr RPAREN
-    ;
+param: ID COLON type ;
+
+args: LPAREN (expr (COMMA expr)*)? RPAREN ;
 
 type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | UNIT ;
 

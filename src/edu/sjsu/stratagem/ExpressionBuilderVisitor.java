@@ -69,18 +69,24 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     public Expression visitFunctionApp(StratagemParser.FunctionAppContext ctx) {
         Expression f = visit(ctx.expr());
         List<Expression> args = new ArrayList<>();
-        Expression arg = visit(ctx.args().getChild(1));
-        args.add(arg);
+
+        for (StratagemParser.ExprContext expr : ctx.args().expr()) {
+            Expression arg = visit(expr);
+            args.add(arg);
+        }
+
         return new FunctionAppExpr(f, args);
     }
 
     @Override
     public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
         List<String> paramNames = new ArrayList<>();
-        paramNames.add(ctx.params().ID().getText());
-
         List<Type> paramTypes = new ArrayList<>();
-        paramTypes.add(parseType(ctx.params().type()));
+
+        for (StratagemParser.ParamContext param : ctx.params().param()) {
+            paramNames.add(param.ID().getText());
+            paramTypes.add(parseType(param.type()));
+        }
 
         Type returnType = parseType(ctx.type());
         Expression body = visit(ctx.seq());
