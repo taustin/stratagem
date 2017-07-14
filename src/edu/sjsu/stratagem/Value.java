@@ -46,13 +46,13 @@ class ClosureVal implements Value {
     private Type[] paramTypes;
     private Type returnType;
     private Expression body;
-    private Environment<Value> outerEnv;
+    private ValueEnvironment outerEnv;
 
     /**
      * The environment is the environment where the function was created.
      * This design is what makes this expression a closure.
      */
-    public ClosureVal(String[] paramNames, Type[] paramTypes, Type returnType, Expression body, Environment<Value> outerEnv) {
+    public ClosureVal(String[] paramNames, Type[] paramTypes, Type returnType, Expression body, ValueEnvironment outerEnv) {
         this.paramNames = paramNames;
         this.paramTypes = paramTypes;
         this.returnType = returnType;
@@ -60,7 +60,7 @@ class ClosureVal implements Value {
         this.outerEnv = outerEnv;
     }
 
-    public ClosureVal(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body, Environment<Value> outerEnv) {
+    public ClosureVal(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body, ValueEnvironment outerEnv) {
         this.paramNames = paramNames.toArray(stringArrayHint);
         this.paramTypes = paramTypes.toArray(typeArrayHint);
         this.returnType = returnType;
@@ -91,7 +91,7 @@ class ClosureVal implements Value {
      */
     public Value apply(List<Value> argVals) {
         assert argVals.size() == paramNames.length;
-        Environment<Value> newEnv = new Environment<>(outerEnv);
+        ValueEnvironment newEnv = new ValueEnvironment(outerEnv);
         for (int i = 0; i < argVals.size(); i++) {
             String varName = paramNames[i];
             Value v = argVals.get(i);

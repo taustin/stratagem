@@ -1,27 +1,26 @@
 package edu.sjsu.stratagem;
 
-import edu.sjsu.stratagem.exception.StratagemException;
+import edu.sjsu.stratagem.exception.StratagemRuntimeException;
 
 import java.util.Map;
 import java.util.HashMap;
 
 /**
- * A variable environment for the program. During typechecking of a program V
- * will be Type, and during evaluation of a program V will be Value.
+ * A variable environment for the runtime of the program.
  */
-public class Environment<V> {
-    private Map<String,V> env = new HashMap<>();
-    private Environment<V> outerEnv;
+public class ValueEnvironment {
+    private Map<String,Value> env = new HashMap<>();
+    private ValueEnvironment outerEnv;
 
     /**
      * Constructor for global environment
      */
-    public Environment() {}
+    public ValueEnvironment() {}
 
     /**
      * Constructor for local environment of a function
      */
-    public Environment(Environment<V> outerEnv) {
+    public ValueEnvironment(ValueEnvironment outerEnv) {
         this.outerEnv = outerEnv;
     }
 
@@ -32,11 +31,11 @@ public class Environment<V> {
      * If we are at the outermost scope (AKA the global scope)
      * null is returned (similar to how JS returns undefined).
      */
-    public V resolveVar(String varName) {
+    public Value resolveVar(String varName) {
         if (env.containsKey(varName)) {
             return env.get(varName);
         } else if (outerEnv == null) {
-            throw new StratagemException("Unbound variable: " + varName);
+            throw new StratagemRuntimeException("Unbound variable: " + varName);
         } else {
             return outerEnv.resolveVar(varName);
         }
@@ -47,7 +46,7 @@ public class Environment<V> {
      * If a variable has not been defined previously in the current scope,
      * or any of the function's outer scopes, the var is stored in the global scope.
      */
-    public void updateVar(String key, V v) {
+    public void updateVar(String key, Value v) {
         if (env.containsKey(key) || outerEnv == null) {
             env.put(key, v);
         } else {
@@ -60,9 +59,9 @@ public class Environment<V> {
      * If the variable has been defined in the current scope previously,
      * a StratagemException is thrown.
      */
-    public void createVar(String key, V v) {
+    public void createVar(String key, Value v) {
         if (env.containsKey(key)) {
-            throw new StratagemException("Redeclaring existing var " + key);
+            throw new StratagemRuntimeException("Redeclaring existing var " + key);
         }
         env.put(key,v);
     }

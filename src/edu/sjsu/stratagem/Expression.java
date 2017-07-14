@@ -15,12 +15,12 @@ public interface Expression {
      * Determines the value type that evaluation of the expression will result in.
      * Throws an exception if the expression is not well-typed.
      */
-    Type typecheck(Environment<Type> env);
+    Type typecheck(TypeEnvironment env);
 
     /**
      * Evaluate the expression in the context of the specified environment.
      */
-    Value evaluate(Environment<Value> env);
+    Value evaluate(ValueEnvironment env);
 }
 
 // NOTE: Using package access so that all implementations of Expression
@@ -40,7 +40,7 @@ class BinOpExpr implements Expression {
         this.e2 = e2;
     }
 
-    public Type typecheck(Environment<Type> env) {
+    public Type typecheck(TypeEnvironment env) {
         Type t1 = e1.typecheck(env);
         Type t2 = e2.typecheck(env);
 
@@ -62,7 +62,7 @@ class BinOpExpr implements Expression {
     }
 
     @SuppressWarnings("incomplete-switch")
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         Value v1 = e1.evaluate(env);
         Value v2 = e2.evaluate(env);
 
@@ -129,7 +129,7 @@ class FunctionAppExpr implements Expression {
         this.args = args.toArray(expressionArrayHint);
     }
 
-    public Type typecheck(Environment<Type> env) {
+    public Type typecheck(TypeEnvironment env) {
         Type fType = f.typecheck(env);
 
         if (!(fType instanceof ClosureType)) {
@@ -152,7 +152,7 @@ class FunctionAppExpr implements Expression {
         return closureType.getReturnType();
     }
 
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         ClosureVal closure = (ClosureVal) f.evaluate(env);
         List<Value> argVals = new ArrayList<>();
         for (Expression arg : args) {
@@ -188,8 +188,8 @@ class FunctionDeclExpr implements Expression {
         this.body = body;
     }
 
-    public Type typecheck(Environment<Type> outerEnv) {
-        Environment<Type> innerEnv = new Environment<>(outerEnv);
+    public Type typecheck(TypeEnvironment outerEnv) {
+        TypeEnvironment innerEnv = new TypeEnvironment(outerEnv);
         for (int i = 0; i < paramNames.length; i++) {
             innerEnv.createVar(paramNames[i], paramTypes[i]);
         }
@@ -201,7 +201,7 @@ class FunctionDeclExpr implements Expression {
         return new ClosureType(paramTypes[0], returnType);
     }
 
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         return new ClosureVal(paramNames, paramTypes, returnType, body, env);
     }
 }
@@ -221,7 +221,7 @@ class IfExpr implements Expression {
         this.els = els;
     }
 
-    public Type typecheck(Environment<Type> env) {
+    public Type typecheck(TypeEnvironment env) {
         Type condT = cond.typecheck(env);
         Type thnT = thn.typecheck(env);
         Type elsT = els.typecheck(env);
@@ -235,7 +235,7 @@ class IfExpr implements Expression {
         return thnT;
     }
 
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         Value v = cond.evaluate(env);
         if (!(v instanceof BoolVal)) {
             throw new StratagemRuntimeException("Expected boolean, but got " + v);
@@ -259,11 +259,11 @@ class PrintExpr implements Expression {
         this.arg = arg;
     }
 
-    public Type typecheck(Environment<Type> env) {
+    public Type typecheck(TypeEnvironment env) {
         return UnitType.singleton;
     }
 
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         Value value = arg.evaluate(env);
         print(value);
         return UnitVal.singleton;
@@ -290,11 +290,11 @@ class SeqExpr implements Expression {
         this.exprs = exprs.toArray(expressionArrayHint);
     }
 
-    public Type typecheck(Environment<Type> env) {
+    public Type typecheck(TypeEnvironment env) {
         return exprs[exprs.length - 1].typecheck(env);
     }
 
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         Value value = UnitVal.singleton;
         for (Expression e : exprs) {
             value = e.evaluate(env);
@@ -313,11 +313,11 @@ class ValueExpr implements Expression {
         this.val = v;
     }
 
-    public Type typecheck(Environment<Type> env) {
+    public Type typecheck(TypeEnvironment env) {
         return val.getType();
     }
 
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         return this.val;
     }
 }
@@ -332,11 +332,11 @@ class VarExpr implements Expression {
         this.varName = varName;
     }
 
-    public Type typecheck(Environment<Type> env) {
+    public Type typecheck(TypeEnvironment env) {
         return env.resolveVar(varName);
     }
 
-    public Value evaluate(Environment<Value> env) {
+    public Value evaluate(ValueEnvironment env) {
         return env.resolveVar(varName);
     }
 }
