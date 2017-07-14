@@ -194,9 +194,14 @@ class FunctionDeclExpr implements Expression {
             innerEnv.createVar(paramNames[i], paramTypes[i]);
         }
         Type bodyT = body.typecheck(innerEnv);
-        if (!bodyT.equals(returnType)) {
-            throw new StratagemTypecheckException(
-                    "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
+        if (returnType == null) {
+            // Infer the type for function body based on what we found.
+            returnType = bodyT;
+        } else {
+            if (!bodyT.equals(returnType)) {
+                throw new StratagemTypecheckException(
+                        "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
+            }
         }
         return new ClosureType(paramTypes[0], returnType);
     }

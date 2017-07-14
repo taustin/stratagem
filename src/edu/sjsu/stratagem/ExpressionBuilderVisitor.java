@@ -120,10 +120,7 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 		paramNames.add(id);
 		paramTypes.add(parseType(ctx.type()));
 
-		// FIXME: Need to determine return type somehow. Add an explicit annotation in the grammar?
-		Type returnType = null;
-
-		FunctionDeclExpr implicitDecl = new FunctionDeclExpr(paramNames, paramTypes, returnType, body);
+		FunctionDeclExpr implicitDecl = new FunctionDeclExpr(paramNames, paramTypes, null, body);
 
 		List<Expression> args = new ArrayList<>();
 		args.add(value);
