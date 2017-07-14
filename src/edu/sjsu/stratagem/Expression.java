@@ -1,6 +1,7 @@
 package edu.sjsu.stratagem;
 
-import edu.sjsu.stratagem.exception.StratagemException;
+import edu.sjsu.stratagem.exception.StratagemRuntimeException;
+import edu.sjsu.stratagem.exception.StratagemTypecheckException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,12 +48,14 @@ class BinOpExpr implements Expression {
         case EQ:
         case NE:
             if (!t1.equals(t2)) {
-                throw new StratagemException("Binary operator expected identical types, got: " + t1 + " and " + t2);
+                throw new StratagemTypecheckException(
+                        "Binary operator expected identical types, got: " + t1 + " and " + t2);
             }
             return BoolType.singleton;
         default:
             if (t1 != IntType.singleton || t2 != IntType.singleton) {
-                throw new StratagemException("Binary operator expected integer arguments, got: " + t1 + " and " + t2);
+                throw new StratagemTypecheckException(
+                        "Binary operator expected integer arguments, got: " + t1 + " and " + t2);
             }
             return IntType.singleton;
         }
@@ -78,7 +81,7 @@ class BinOpExpr implements Expression {
 
         // Int operations case
         if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
-            throw new StratagemException("Expected ints, but got " + v1 + " and " + v2);
+            throw new StratagemRuntimeException("Expected ints, but got " + v1 + " and " + v2);
         }
         int i = ((IntVal) v1).toInt();
         int j = ((IntVal) v2).toInt();
@@ -103,7 +106,7 @@ class BinOpExpr implements Expression {
             return new BoolVal(i <= j);
         }
 
-        throw new StratagemException("Unrecognized operator: " + op);
+        throw new StratagemRuntimeException("Unrecognized operator: " + op);
     }
 }
 
@@ -130,7 +133,7 @@ class FunctionAppExpr implements Expression {
         Type fType = f.typecheck(env);
 
         if (!(fType instanceof ClosureType)) {
-            throw new StratagemException("Not a function: " + fType.toString());
+            throw new StratagemTypecheckException("Not a function: " + fType.toString());
         }
         ClosureType closureType = (ClosureType) fType;
 
@@ -141,7 +144,9 @@ class FunctionAppExpr implements Expression {
 
         Type[] closureArgTypes = closureType.getArgTypes();
         if (!Arrays.equals(closureArgTypes, argTypes)) {
-            throw new StratagemException("Incorrect argument types, expected: " + Arrays.toString(closureArgTypes) + ", got: " + Arrays.toString(argTypes));
+            throw new StratagemTypecheckException(
+                    "Incorrect argument types, expected: " + Arrays.toString(closureArgTypes) +
+                                                 ", got: " + Arrays.toString(argTypes));
         }
 
         return closureType.getReturnType();
@@ -190,7 +195,7 @@ class FunctionDeclExpr implements Expression {
         }
         Type bodyT = body.typecheck(innerEnv);
         if (!bodyT.equals(returnType)) {
-            throw new StratagemException(
+            throw new StratagemTypecheckException(
                     "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
         }
         return new ClosureType(paramTypes[0], returnType);
@@ -222,10 +227,10 @@ class IfExpr implements Expression {
         Type elsT = els.typecheck(env);
 
         if (condT != BoolType.singleton) {
-            throw new StratagemException("If-expression expected boolean in condition, got: " + condT);
+            throw new StratagemTypecheckException("If-expression expected boolean in condition, got: " + condT);
         }
         if (!thnT.equals(elsT)) {
-            throw new StratagemException("If-expression branches have unequal type: " + thnT + " and " + elsT);
+            throw new StratagemTypecheckException("If-expression branches have unequal type: " + thnT + " and " + elsT);
         }
         return thnT;
     }
@@ -233,7 +238,7 @@ class IfExpr implements Expression {
     public Value evaluate(Environment<Value> env) {
         Value v = cond.evaluate(env);
         if (!(v instanceof BoolVal)) {
-            throw new StratagemException("Expected boolean, but got " + v);
+            throw new StratagemRuntimeException("Expected boolean, but got " + v);
         }
         BoolVal bv = (BoolVal) v;
         if (bv.toBoolean()) {
