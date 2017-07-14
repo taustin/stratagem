@@ -220,13 +220,24 @@ public class ExpressionTest {
         VarExpr a = new VarExpr("a");
         VarExpr b = new VarExpr("b");
         BinOpExpr add = new BinOpExpr(Op.ADD, a, b);
-        FunctionDeclExpr fnDecl = new FunctionDeclExpr( new String[] {"a", "b"}, null, null, add);
+        FunctionDeclExpr decl = new FunctionDeclExpr(new String[] {"a", "b"}, null, null, add);
 
         ValueExpr one = new ValueExpr(new IntVal(1));
         ValueExpr two = new ValueExpr(new IntVal(2));
-        FunctionAppExpr app = new FunctionAppExpr(fnDecl, new Expression[] { one, two });
+        FunctionAppExpr app = new FunctionAppExpr(decl, new Expression[] { one, two });
 
-        Value v = app.evaluate(new ValueEnvironment());
-        assertEquals(new IntVal(3), v);
+        Value result = app.evaluate(new ValueEnvironment());
+        assertEquals(new IntVal(3), result);
+    }
+
+    @Test
+    // fn(): () { () }
+    public void testNoParameters() {
+        ValueExpr unit = new ValueExpr(UnitVal.singleton);
+        FunctionDeclExpr decl = new FunctionDeclExpr(new String[] {}, null, null, unit);
+
+        FunctionAppExpr app = new FunctionAppExpr(decl, new Expression[] {});
+
+        assertEquals(UnitVal.singleton, app.evaluate(new ValueEnvironment()));
     }
 }
