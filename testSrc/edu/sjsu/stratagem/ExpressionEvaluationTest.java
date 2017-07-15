@@ -8,7 +8,7 @@ import java.util.List;
 import edu.sjsu.stratagem.exception.StratagemException;
 import org.junit.Test;
 
-public class ExpressionTest {
+public class ExpressionEvaluationTest {
 
     @Test
     public void testValueExpr() {
