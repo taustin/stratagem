@@ -10,6 +10,18 @@ public interface Type {}
 //can be included in the same file.
 
 /**
+ * Dynamic any type.
+ */
+class AnyType implements Type {
+    public static final AnyType singleton = new AnyType();
+
+    @Override
+    public String toString() {
+        return "?";
+    }
+}
+
+/**
  * Boolean types.
  */
 class BoolType implements Type {
