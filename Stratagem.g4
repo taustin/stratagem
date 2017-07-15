@@ -69,7 +69,8 @@ prog: seq ;
 
 seq: expr (SEPARATOR expr)* ;
 
-expr: expr args                                                                   # functionApp
+expr: LPAREN expr RPAREN                                                          # parens
+    | expr args                                                                   # functionApp
     | FUNCTION params COLON type LBRACE seq RBRACE                                # functionDecl
     | LIT_INT                                                                     # int
     | LIT_BOOL                                                                    # bool
