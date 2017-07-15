@@ -34,7 +34,7 @@ class BinOpExpr implements Expression {
     private Op op;
     private Expression e1;
     private Expression e2;
-    public BinOpExpr(Op op, Expression e1, Expression e2) {
+    BinOpExpr(Op op, Expression e1, Expression e2) {
         this.op = op;
         this.e1 = e1;
         this.e2 = e2;
@@ -119,12 +119,12 @@ class FunctionAppExpr implements Expression {
     private Expression f;
     private Expression[] args;
 
-    public FunctionAppExpr(Expression f, Expression[] args) {
+    FunctionAppExpr(Expression f, Expression[] args) {
         this.f = f;
         this.args = args;
     }
 
-    public FunctionAppExpr(Expression f, List<Expression> args) {
+    FunctionAppExpr(Expression f, List<Expression> args) {
         this.f = f;
         this.args = args.toArray(expressionArrayHint);
     }
@@ -174,14 +174,14 @@ class FunctionDeclExpr implements Expression {
     private Type returnType;  // Type that the programmer ascribed within the Stratagem code.
     private Expression body;
 
-    public FunctionDeclExpr(String[] paramNames, Type[] paramTypes, Type returnType, Expression body) {
+    FunctionDeclExpr(String[] paramNames, Type[] paramTypes, Type returnType, Expression body) {
         this.paramNames = paramNames;
         this.paramTypes = paramTypes;
         this.returnType = returnType;
         this.body = body;
     }
 
-    public FunctionDeclExpr(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body) {
+    FunctionDeclExpr(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body) {
         this.paramNames = paramNames.toArray(stringArrayHint);
         this.paramTypes = paramTypes.toArray(typeArrayHint);
         this.returnType = returnType;
@@ -220,7 +220,7 @@ class IfExpr implements Expression {
     private Expression thn;
     private Expression els;
 
-    public IfExpr(Expression cond, Expression thn, Expression els) {
+    IfExpr(Expression cond, Expression thn, Expression els) {
         this.cond = cond;
         this.thn = thn;
         this.els = els;
@@ -260,7 +260,7 @@ class IfExpr implements Expression {
 class PrintExpr implements Expression {
     private Expression arg;
 
-    public PrintExpr(Expression arg) {
+    PrintExpr(Expression arg) {
         this.arg = arg;
     }
 
@@ -287,11 +287,11 @@ class SeqExpr implements Expression {
 
     private Expression[] exprs;
 
-    public SeqExpr(Expression[] exprs) {
+    SeqExpr(Expression[] exprs) {
         this.exprs = exprs;
     }
 
-    public SeqExpr(List<Expression> exprs) {
+    SeqExpr(List<Expression> exprs) {
         this.exprs = exprs.toArray(expressionArrayHint);
     }
 
@@ -314,7 +314,7 @@ class SeqExpr implements Expression {
 class ValueExpr implements Expression {
     private Value val;
 
-    public ValueExpr(Value v) {
+    ValueExpr(Value v) {
         this.val = v;
     }
 
@@ -333,7 +333,7 @@ class ValueExpr implements Expression {
 class VarExpr implements Expression {
     private String varName;
 
-    public VarExpr(String varName) {
+    VarExpr(String varName) {
         this.varName = varName;
     }
 
