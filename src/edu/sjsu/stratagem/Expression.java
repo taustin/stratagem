@@ -203,7 +203,7 @@ class FunctionDeclExpr implements Expression {
                         "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
             }
         }
-        return new ClosureType(paramTypes[0], returnType);
+        return new ClosureType(paramTypes, returnType);
     }
 
     public Value evaluate(ValueEnvironment env) {

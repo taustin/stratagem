@@ -187,9 +187,21 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
         }
     }
 
+    private static Type[] typeArrayHint = new Type[] {};
+
     private Type parseClosureType(StratagemParser.Type_funContext ctx) {
-        Type arg = parsePrimitiveType(ctx.type_prim());
-        Type ret = parseType(ctx.type());
-        return new ClosureType(arg, ret);
+        ArrayList<Type> args = new ArrayList<>();
+        for (StratagemParser.Type_fun_pieceContext piece : ctx.type_fun_piece()) {
+            Type arg;
+            if (piece.type_prim() != null) {
+                arg = parsePrimitiveType(piece.type_prim());
+            } else {
+                arg = parseClosureType(piece.type_fun());
+            }
+            args.add(arg);
+        }
+        Type ret = args.get(args.size() - 1);
+        args.remove(args.size() - 1);
+        return new ClosureType(args.toArray(typeArrayHint), ret);
     }
 }

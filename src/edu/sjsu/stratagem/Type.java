@@ -1,5 +1,7 @@
 package edu.sjsu.stratagem;
 
+import java.util.Arrays;
+
 /**
  * Types in Stratagem.
  * Typechecking a Stratagem expression should return a Stratagem type.
@@ -61,18 +63,16 @@ class UnitType implements Type {
  * A closure's type. Closures take one argument and have one return value.
  */
 class ClosureType implements Type {
-    private Type arg;
+    private Type[] args;
     private Type ret;
 
-    public ClosureType(Type arg, Type ret) {
-        this.arg = arg;
+    public ClosureType(Type[] args, Type ret) {
+        this.args = args;
         this.ret = ret;
     }
 
     public Type[] getArgTypes() {
-        return new Type[] {
-                arg
-        };
+        return args;
     }
 
     public Type getReturnType() {
@@ -85,11 +85,11 @@ class ClosureType implements Type {
             return false;
         }
         ClosureType other = (ClosureType) that;
-        return arg.equals(other.arg) && ret.equals(other.ret);
+        return Arrays.equals(args, other.args) && ret.equals(other.ret);
     }
 
     @Override
     public String toString() {
-        return arg + " -> " + ret;
+        return args + " -> " + ret;
     }
 }

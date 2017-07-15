@@ -69,7 +69,7 @@ class ClosureVal implements Value {
     }
 
     public Type getType() {
-        return new ClosureType(paramTypes[0], returnType);
+        return new ClosureType(paramTypes, returnType);
     }
 
     public String toString() {
