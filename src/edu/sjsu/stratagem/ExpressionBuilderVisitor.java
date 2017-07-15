@@ -134,6 +134,11 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     }
 
     @Override
+    public Expression visitParens(StratagemParser.ParensContext ctx) {
+        return visit(ctx.expr());
+    }
+
+    @Override
     public Expression visitPrint(StratagemParser.PrintContext ctx) {
         Expression arg = visit(ctx.args().getChild(1));
         return new PrintExpr(arg);
