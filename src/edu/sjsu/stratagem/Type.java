@@ -90,6 +90,6 @@ class ClosureType implements Type {
 
     @Override
     public String toString() {
-        return args + " -> " + ret;
+        return Arrays.toString(args) + " -> " + ret;
     }
 }
