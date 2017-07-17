@@ -1,0 +1,45 @@
+// One of each type of expression to test basic parsing.
+
+
+// Bool, Int, String, Unit
+true;
+2;
+"three";
+();
+
+// Function declaration
+fn(n: Int): Int { 1 };
+
+// Function application
+fn(n: Int): Int { 1 }(2);
+
+fn(x: Int): Int -> Int {
+    fn(y: Int): Int {
+        1
+    }
+}(2)(3);
+
+// Id
+fn(n: Int): Int { n }(1);
+
+// Let
+let one: Int = 1 in 2;
+
+// Binary operators
+1 + 1;
+1 - 1;
+1 * 1;
+1 / 1;
+1 % 1;
+1 > 1;
+1 >= 1;
+1 < 1;
+1 <= 1;
+1 == 1;
+1 != 1;
+
+// If
+if (true) { false } else { true };
+
+// Print
+print(true)
