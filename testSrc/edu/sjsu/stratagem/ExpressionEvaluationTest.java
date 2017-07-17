@@ -8,7 +8,7 @@ import java.util.List;
 import edu.sjsu.stratagem.exception.StratagemException;
 import org.junit.Test;
 
-public class ExpressionTest {
+public class ExpressionEvaluationTest {
 
     @Test
     public void testValueExpr() {
@@ -212,5 +212,32 @@ public class ExpressionTest {
         Expression s2 = new ValueExpr(new StringVal("table"));
         Expression exp = new BinOpExpr(Op.ADD, s1, s2);
         assertEquals(new StringVal("notable"), exp.evaluate(env));
+    }
+
+    @Test
+    // fn(a: Int b: Int): Int { a + b }(1, 2)
+    public void testMultipleParameters() {
+        VarExpr a = new VarExpr("a");
+        VarExpr b = new VarExpr("b");
+        BinOpExpr add = new BinOpExpr(Op.ADD, a, b);
+        FunctionDeclExpr decl = new FunctionDeclExpr(new String[] {"a", "b"}, null, null, add);
+
+        ValueExpr one = new ValueExpr(new IntVal(1));
+        ValueExpr two = new ValueExpr(new IntVal(2));
+        FunctionAppExpr app = new FunctionAppExpr(decl, new Expression[] { one, two });
+
+        Value result = app.evaluate(new ValueEnvironment());
+        assertEquals(new IntVal(3), result);
+    }
+
+    @Test
+    // fn(): () { () }
+    public void testNoParameters() {
+        ValueExpr unit = new ValueExpr(UnitVal.singleton);
+        FunctionDeclExpr decl = new FunctionDeclExpr(new String[] {}, null, null, unit);
+
+        FunctionAppExpr app = new FunctionAppExpr(decl, new Expression[] {});
+
+        assertEquals(UnitVal.singleton, app.evaluate(new ValueEnvironment()));
     }
 }

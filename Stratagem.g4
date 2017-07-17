@@ -43,6 +43,7 @@ PRINT : 'print' ;
 // Misc syntax & keywords
 SEPARATOR : ';' ;
 COLON : ':' ;
+COMMA : ',' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
 LBRACE : '{' ;
@@ -69,7 +70,8 @@ prog: seq ;
 
 seq: expr (SEPARATOR expr)* ;
 
-expr: expr args                                                                   # functionApp
+expr: LPAREN expr RPAREN                                                          # parens
+    | expr args                                                                   # functionApp
     | FUNCTION params COLON type LBRACE seq RBRACE                                # functionDecl
     | LIT_INT                                                                     # int
     | LIT_BOOL                                                                    # bool
@@ -82,14 +84,16 @@ expr: expr args                                                                 
     | PRINT args                                                                  # print
     ;
 
-params: LPAREN ID COLON type RPAREN
-      ;
+params: LPAREN (param (COMMA param)*)? RPAREN ;
 
-args: LPAREN expr RPAREN
-    ;
+param: ID COLON type ;
+
+args: LPAREN (expr (COMMA expr)*)? RPAREN ;
 
 type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | UNIT ;
 
-type_fun  : type_prim TYPE_FUN type ;
+type_fun  : type_fun_piece TYPE_FUN type_fun_piece (TYPE_FUN type_fun_piece)* ;
+
+type_fun_piece : type_prim | LPAREN type_fun RPAREN ;
 
 type      : type_prim | type_fun ;

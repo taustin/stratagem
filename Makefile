@@ -70,7 +70,9 @@ parse: generate compile ${TREES_DIR}
 test: generate compile
 	java -cp ${BUILD_DIR}:${TEST_CLASSPATH} \
 	     org.junit.runner.JUnitCore \
-	     ${PACKAGE_NAME}.ExpressionTest
+	     ${PACKAGE_NAME}.ExpressionEvaluationTest \
+	     ${PACKAGE_NAME}.ExpressionTypecheckTest \
+	     ${PACKAGE_NAME}.ValueTest
 
 # Run the interpretor on all test Stratagem scripts
 run: generate compile

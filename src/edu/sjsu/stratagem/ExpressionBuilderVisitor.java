@@ -69,18 +69,24 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     public Expression visitFunctionApp(StratagemParser.FunctionAppContext ctx) {
         Expression f = visit(ctx.expr());
         List<Expression> args = new ArrayList<>();
-        Expression arg = visit(ctx.args().getChild(1));
-        args.add(arg);
+
+        for (StratagemParser.ExprContext expr : ctx.args().expr()) {
+            Expression arg = visit(expr);
+            args.add(arg);
+        }
+
         return new FunctionAppExpr(f, args);
     }
 
     @Override
     public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
         List<String> paramNames = new ArrayList<>();
-        paramNames.add(ctx.params().ID().getText());
-
         List<Type> paramTypes = new ArrayList<>();
-        paramTypes.add(parseType(ctx.params().type()));
+
+        for (StratagemParser.ParamContext param : ctx.params().param()) {
+            paramNames.add(param.ID().getText());
+            paramTypes.add(parseType(param.type()));
+        }
 
         Type returnType = parseType(ctx.type());
         Expression body = visit(ctx.seq());
@@ -125,6 +131,11 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
         List<Expression> args = new ArrayList<>();
         args.add(value);
         return new FunctionAppExpr(implicitDecl, args);
+    }
+
+    @Override
+    public Expression visitParens(StratagemParser.ParensContext ctx) {
+        return visit(ctx.expr());
     }
 
     @Override
@@ -181,9 +192,21 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
         }
     }
 
+    private static Type[] typeArrayHint = new Type[] {};
+
     private Type parseClosureType(StratagemParser.Type_funContext ctx) {
-        Type arg = parsePrimitiveType(ctx.type_prim());
-        Type ret = parseType(ctx.type());
-        return new ClosureType(arg, ret);
+        ArrayList<Type> args = new ArrayList<>();
+        for (StratagemParser.Type_fun_pieceContext piece : ctx.type_fun_piece()) {
+            Type arg;
+            if (piece.type_prim() != null) {
+                arg = parsePrimitiveType(piece.type_prim());
+            } else {
+                arg = parseClosureType(piece.type_fun());
+            }
+            args.add(arg);
+        }
+        Type ret = args.get(args.size() - 1);
+        args.remove(args.size() - 1);
+        return new ClosureType(args.toArray(typeArrayHint), ret);
     }
 }

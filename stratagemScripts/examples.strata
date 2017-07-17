@@ -1,4 +1,13 @@
 let x: Int = 0 in x + 1;
 let x: Int = 3 + 4 in x;
 let y: Bool = true in ();
-fn(z: Bool): Bool { z; z }(let b: Bool = true in b)
+print(fn(z: Bool): Bool { z; z }(let b: Bool = true in b));  // true
+
+// Identity function for integers, strings, and a conversion from the one for ints to the one for strings.
+let id_i: Int -> Int = fn(x: Int): Int { x } in
+let id_s: String -> String = fn(x: String): String { x } in
+let i_to_s: (Int -> Int) -> (String -> String) = fn(id_i: Int -> Int): String -> String { id_s } in
+(print(i_to_s(id_i) == id_s));  // true
+
+let add: Int -> Int -> Int = fn(a: Int, b: Int): Int { a + b } in
+(print(add(1, 2) == 3))  // true
