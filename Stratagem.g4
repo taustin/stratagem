@@ -91,6 +91,7 @@ args: LPAREN expr RPAREN
 
 type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | UNIT ;
 
-type_fun  : type_prim TYPE_FUN type ;
+//          (domain                            ) TYPE_FUN codomain ;
+type_fun  : (type_prim | LPAREN type_fun RPAREN) TYPE_FUN type ;
 
 type      : type_prim | type_fun ;

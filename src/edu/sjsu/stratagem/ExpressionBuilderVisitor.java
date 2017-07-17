@@ -187,7 +187,16 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     }
 
     private Type parseClosureType(StratagemParser.Type_funContext ctx) {
-        Type arg = parsePrimitiveType(ctx.type_prim());
+        StratagemParser.Type_primContext prim = ctx.type_prim();
+        Type arg;
+
+        if (prim != null) {
+            arg = parsePrimitiveType(prim);
+        } else {
+            StratagemParser.Type_funContext fun = ctx.type_fun();
+            arg = parseClosureType(fun);
+        }
+
         Type ret = parseType(ctx.type());
         return new ClosureType(arg, ret);
     }
