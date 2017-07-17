@@ -213,4 +213,51 @@ public class ExpressionTest {
         Expression exp = new BinOpExpr(Op.ADD, s1, s2);
         assertEquals(new StringVal("notable"), exp.evaluate(env));
     }
+
+    @Test
+    // let apply: (Int -> Int) -> (Int -> Int) = fn(trans: Int -> Int): Int -> Int {
+    //   fn(x: Int): Int {
+    //     trans(x)
+    //   }
+    // }(fn(x: Int) { x + 1 })(2)  // returns 3
+    //
+    // // In Haskell:
+    // // apply f x = f x
+    // // apply (+ 1) 2  // produces 3
+    public void testHigherOrderFunction() {
+        FunctionDeclExpr applyInner = new FunctionDeclExpr(
+                new String[] {"x"},
+                new Type[] {IntType.singleton},
+                IntType.singleton,
+                new FunctionAppExpr(
+                        new VarExpr("trans"),
+                        new Expression[] {new VarExpr("x")}));
+
+        ClosureType intFn = new ClosureType(IntType.singleton, IntType.singleton);
+        FunctionDeclExpr apply = new FunctionDeclExpr(
+                new String[] {"trans"},
+                new Type[] {intFn},
+                intFn,
+                applyInner);
+
+        FunctionDeclExpr plusOne = new FunctionDeclExpr(
+                new String[] {"x"},
+                new Type[] {IntType.singleton},
+                IntType.singleton,
+                new BinOpExpr(Op.ADD, new VarExpr("x"), new ValueExpr(new IntVal(1))));
+
+        ValueExpr two = new ValueExpr(new IntVal(2));
+
+        FunctionAppExpr callApply1 = new FunctionAppExpr(apply, new Expression[] {plusOne});
+        FunctionAppExpr callApply2 = new FunctionAppExpr(callApply1, new Expression[] {two});
+
+        // Make sure it typechecks.
+        callApply2.typecheck(new TypeEnvironment());
+
+        // Call it.
+        Value result = callApply2.evaluate(new ValueEnvironment());
+
+        Value three = new IntVal(3);
+        assertEquals(three, result);
+    }
 }
