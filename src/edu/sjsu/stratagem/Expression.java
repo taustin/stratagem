@@ -1,10 +1,10 @@
 package edu.sjsu.stratagem;
 
+import edu.sjsu.stratagem.exception.StratagemCastException;
 import edu.sjsu.stratagem.exception.StratagemRuntimeException;
 import edu.sjsu.stratagem.exception.StratagemTypecheckException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -47,13 +47,13 @@ class BinOpExpr implements Expression {
         switch (op) {
         case EQ:
         case NE:
-            if (!t1.equals(t2)) {
+            if (!t1.consistentWith(t2)) {
                 throw new StratagemTypecheckException(
                         "Binary operator expected identical types, got: " + t1 + " and " + t2);
             }
             return BoolType.singleton;
         default:
-            if (t1 != IntType.singleton || t2 != IntType.singleton) {
+            if (!t1.consistentWith(IntType.singleton) || !t2.consistentWith(IntType.singleton)) {
                 throw new StratagemTypecheckException(
                         "Binary operator expected integer arguments, got: " + t1 + " and " + t2);
             }
@@ -111,6 +111,35 @@ class BinOpExpr implements Expression {
 }
 
 /**
+ * Runtime cast from a type involving an Any to a concrete type.
+ */
+class CastExpr implements Expression {
+    private Type target;
+    private Expression body;
+
+    CastExpr(Type target, Expression body) {
+        this.target = target;
+        this.body = body;
+    }
+
+    public Type typecheck(TypeEnvironment env) {
+        // Continue typechecking the body, but discard its result here.
+        body.typecheck(env);
+
+        return target;
+    }
+
+    public Value evaluate(ValueEnvironment env) {
+        Value v = body.evaluate(env);
+        if (v.getType().consistentWith(target)) {
+            return v;
+        } else {
+            throw new StratagemCastException(null);
+        }
+    }
+}
+
+/**
  * Function application.
  */
 class FunctionAppExpr implements Expression {
@@ -129,27 +158,38 @@ class FunctionAppExpr implements Expression {
         this.args = args.toArray(expressionArrayHint);
     }
 
-    public Type typecheck(TypeEnvironment env) {
-        Type fType = f.typecheck(env);
-
-        if (!(fType instanceof ClosureType)) {
-            throw new StratagemTypecheckException("Not a function: " + fType.toString());
-        }
-        ClosureType closureType = (ClosureType) fType;
-
+    private ClosureType makeExpectedClosureType(TypeEnvironment env) {
         Type[] argTypes = new Type[args.length];
         for (int i = 0; i < args.length; i++) {
             argTypes[i] = args[i].typecheck(env);
         }
 
-        Type[] closureArgTypes = closureType.getArgTypes();
-        if (!Arrays.equals(closureArgTypes, argTypes)) {
-            throw new StratagemTypecheckException(
-                    "Incorrect argument types, expected: " + Arrays.toString(closureArgTypes) +
-                                                 ", got: " + Arrays.toString(argTypes));
+        return new ClosureType(argTypes[0], AnyType.singleton);
+    }
+
+    public Type typecheck(TypeEnvironment env) {
+        Type closureType = f.typecheck(env);
+
+        // Technically this check is redundant with the next, but it provides a nicer error.
+        if (!(closureType instanceof AnyType || closureType instanceof ClosureType)) {
+            throw new StratagemTypecheckException("Expected a function: " + closureType.toString());
         }
 
-        return closureType.getReturnType();
+        ClosureType expectedClosureType = makeExpectedClosureType(env);
+        if (!closureType.consistentWith(expectedClosureType)) {
+            throw new StratagemTypecheckException(
+                    "Inconsistent function type, expected: " + expectedClosureType + ", got: " + closureType);
+        }
+
+        // TODO: If types not equal, insert cast.
+
+        // If we are calling an Any, we can't tell its return type.
+        if (closureType instanceof AnyType) {
+            return AnyType.singleton;
+        } else {
+            ClosureType knownClosure = (ClosureType) closureType;
+            return knownClosure.getReturnType();
+        }
     }
 
     public Value evaluate(ValueEnvironment env) {

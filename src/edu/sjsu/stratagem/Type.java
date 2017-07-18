@@ -4,7 +4,9 @@ package edu.sjsu.stratagem;
  * Types in Stratagem.
  * Typechecking a Stratagem expression should return a Stratagem type.
  */
-public interface Type {}
+public interface Type {
+    boolean consistentWith(Type other);
+}
 
 //NOTE: Using package access so that all implementations of Type
 //can be included in the same file.
@@ -14,6 +16,10 @@ public interface Type {}
  */
 class AnyType implements Type {
     public static final AnyType singleton = new AnyType();
+
+    public boolean consistentWith(Type other) {
+        return true;
+    }
 
     @Override
     public String toString() {
@@ -27,6 +33,10 @@ class AnyType implements Type {
 class BoolType implements Type {
     public static final BoolType singleton = new BoolType();
 
+    public boolean consistentWith(Type other) {
+        return other instanceof BoolType || other instanceof AnyType;
+    }
+
     @Override
     public String toString() {
         return "Bool";
@@ -38,6 +48,10 @@ class BoolType implements Type {
  */
 class IntType implements Type {
     public static final IntType singleton = new IntType();
+
+    public boolean consistentWith(Type other) {
+        return other instanceof IntType || other instanceof AnyType;
+    }
 
     @Override
     public String toString() {
@@ -51,6 +65,10 @@ class IntType implements Type {
 class StringType implements Type {
     public static final StringType singleton = new StringType();
 
+    public boolean consistentWith(Type other) {
+        return other instanceof StringType || other instanceof AnyType;
+    }
+
     @Override
     public String toString() {
         return "String";
@@ -62,6 +80,10 @@ class StringType implements Type {
  */
 class UnitType implements Type {
     public static final UnitType singleton = new UnitType();
+
+    public boolean consistentWith(Type other) {
+        return other instanceof UnitType || other instanceof AnyType;
+    }
 
     @Override
     public String toString() {
@@ -91,13 +113,15 @@ class ClosureType implements Type {
         return ret;
     }
 
-    @Override
-    public boolean equals(Object that) {
-        if (!(that instanceof ClosureType)) {
+    public boolean consistentWith(Type other) {
+        if (other instanceof AnyType) {
+            return true;
+        }
+        if (!(other instanceof ClosureType)) {
             return false;
         }
-        ClosureType other = (ClosureType) that;
-        return arg.equals(other.arg) && ret.equals(other.ret);
+        ClosureType that = (ClosureType)other;
+        return arg.consistentWith(that.arg) && ret.consistentWith(that.ret);
     }
 
     @Override
