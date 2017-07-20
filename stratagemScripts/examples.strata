@@ -1,3 +1,10 @@
 // Interesting examples
 
-0
+let apply: (Int -> Int) -> Int -> Int =
+    fn(f: Int -> Int): Int -> Int {
+        fn(n: Int): Int {
+            f(n)
+        }
+    }
+in let plusOne: Int -> Int = fn(n: Int): Int { n + 1 }
+in apply(plusOne)(2) == 3
