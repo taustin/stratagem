@@ -5,7 +5,7 @@
 true;
 2;
 "three";
-();
+unit;
 
 // Function declaration
 fn(n: Int): Int { 1 };
