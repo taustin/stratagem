@@ -94,36 +94,14 @@ public class ExpressionTest {
     // (function(x) { x; })(321);
     public void testIdFunction() {
         ValueEnvironment env = new ValueEnvironment();
-        List<String> paramNames = new ArrayList<>();
-        paramNames.add("x");
-        FunctionDeclExpr f = new FunctionDeclExpr(paramNames,
-                new ArrayList<>(),
+        FunctionDeclExpr f = new FunctionDeclExpr(
+                "x",
+                null,
                 null,
                 new VarExpr("x"));
-        List<Expression> args = new ArrayList<>();
-        args.add(new ValueExpr(new IntVal(321)));
-        FunctionAppExpr app = new FunctionAppExpr(f,args);
+        Expression arg = new ValueExpr(new IntVal(321));
+        FunctionAppExpr app = new FunctionAppExpr(f, arg);
         assertEquals(new IntVal(321), app.evaluate(env));
-    }
-
-    @Test
-    // (function(x,y) { x / y; })(8,2);
-    public void testDivFunction() {
-        ValueEnvironment env = new ValueEnvironment();
-        List<String> params = new ArrayList<>();
-        params.add("x");
-        params.add("y");
-        FunctionDeclExpr f = new FunctionDeclExpr(params,
-                new ArrayList<>(),
-                null,
-                new BinOpExpr(Op.DIVIDE,
-                        new VarExpr("x"),
-                        new VarExpr("y")));
-        List<Expression> args = new ArrayList<>();
-        args.add(new ValueExpr(new IntVal(8)));
-        args.add(new ValueExpr(new IntVal(2)));
-        FunctionAppExpr app = new FunctionAppExpr(f,args);
-        assertEquals(new IntVal(4), app.evaluate(env));
     }
 
     @Test
@@ -134,19 +112,17 @@ public class ExpressionTest {
 
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
-                new String[] {"unused"},
+                "unused",
                 null,
                 null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
-                new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
+                new FunctionAppExpr(innerDecl, new ValueExpr(bob)));
 
-        FunctionAppExpr outerApp = new FunctionAppExpr(
-                outerDecl,
-                new Expression[] { new ValueExpr(alice) });
+        FunctionAppExpr outerApp = new FunctionAppExpr(outerDecl, new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
         assertEquals(v, alice);
     }
@@ -159,19 +135,19 @@ public class ExpressionTest {
 
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
-                new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
+                new FunctionAppExpr(innerDecl, new ValueExpr(bob)));
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
                 outerDecl,
-                new Expression[] { new ValueExpr(alice) });
+                new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
         assertEquals(v, bob);
     }
@@ -184,22 +160,22 @@ public class ExpressionTest {
 
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
                 new SeqExpr(new Expression[] {
-                        new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }),
+                        new FunctionAppExpr(innerDecl, new ValueExpr(bob)),
                         new VarExpr("name")
                 }));
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
                 outerDecl,
-                new Expression[] { new ValueExpr(alice) });
+                new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
         assertEquals(v, alice);
     }

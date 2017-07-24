@@ -103,10 +103,8 @@ class ClosureType implements Type {
         this.ret = ret;
     }
 
-    public Type[] getArgTypes() {
-        return new Type[] {
-                arg
-        };
+    public Type getArgType() {
+        return arg;
     }
 
     public Type getReturnType() {

@@ -39,11 +39,8 @@ class BoolVal implements Value {
  * Note that a closure remembers its surrounding scope.
  */
 class ClosureVal implements Value {
-    private static final String[] stringArrayHint = new String[0];
-    private static final Type[] typeArrayHint = new Type[0];
-
-    private String[] paramNames;
-    private Type[] paramTypes;
+    private String paramName;
+    private Type paramType;
     private Type returnType;
     private Expression body;
     private ValueEnvironment outerEnv;
@@ -52,33 +49,22 @@ class ClosureVal implements Value {
      * The environment is the environment where the function was created.
      * This design is what makes this expression a closure.
      */
-    public ClosureVal(String[] paramNames, Type[] paramTypes, Type returnType, Expression body, ValueEnvironment outerEnv) {
-        this.paramNames = paramNames;
-        this.paramTypes = paramTypes;
-        this.returnType = returnType;
-        this.body = body;
-        this.outerEnv = outerEnv;
-    }
-
-    public ClosureVal(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body, ValueEnvironment outerEnv) {
-        this.paramNames = paramNames.toArray(stringArrayHint);
-        this.paramTypes = paramTypes.toArray(typeArrayHint);
+    public ClosureVal(String paramName, Type paramType, Type returnType, Expression body, ValueEnvironment outerEnv) {
+        this.paramName = paramName;
+        this.paramType = paramType;
         this.returnType = returnType;
         this.body = body;
         this.outerEnv = outerEnv;
     }
 
     public Type getType() {
-        return new ClosureType(paramTypes[0], returnType);
+        return new ClosureType(paramType, returnType);
     }
 
     public String toString() {
         StringBuilder s = new StringBuilder("function(");
         String sep = "";
-        for (int i = 0; i < paramNames.length; i++) {
-            s.append(sep).append(paramNames[i]).append(": ").append(paramTypes[i]);
-            sep = ", ";
-        }
+        s.append(sep).append(paramName).append(": ").append(paramType);
         s.append("): ").append(returnType).append(" {...}");
 
         return s.toString();
@@ -89,14 +75,9 @@ class ClosureVal implements Value {
      * of the environment where the function was created. Each parameter should
      * be bound to its matching argument and added to the new local environment.
      */
-    public Value apply(List<Value> argVals) {
-        assert argVals.size() == paramNames.length;
+    public Value apply(Value argVal) {
         ValueEnvironment newEnv = new ValueEnvironment(outerEnv);
-        for (int i = 0; i < argVals.size(); i++) {
-            String varName = paramNames[i];
-            Value v = argVals.get(i);
-            newEnv.createVar(varName, v);
-        }
+        newEnv.createVar(paramName, argVal);
         return body.evaluate(newEnv);
     }
 }

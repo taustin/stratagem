@@ -143,29 +143,18 @@ class CastExpr implements Expression {
  * Function application.
  */
 class FunctionAppExpr implements Expression {
-    private static final Expression[] expressionArrayHint = new Expression[0];
-
     private Expression closureExpr;
-    private Expression[] args;
+    private Expression arg;
 
-    FunctionAppExpr(Expression closureExpr, Expression[] args) {
+    FunctionAppExpr(Expression closureExpr, Expression arg) {
         this.closureExpr = closureExpr;
-        this.args = args;
-    }
-
-    FunctionAppExpr(Expression closureExpr, List<Expression> args) {
-        this.closureExpr = closureExpr;
-        this.args = args.toArray(expressionArrayHint);
+        this.arg = arg;
     }
 
     public Type typecheck(TypeEnvironment env) {
         // Typecheck the closureExpr and args under this application.
         Type closureType = closureExpr.typecheck(env);
-        Type[] argTypes = new Type[args.length];
-
-        for (int i = 0; i < argTypes.length; i++) {
-            argTypes[i] = args[i].typecheck(env);
-        }
+        Type argType = arg.typecheck(env);
 
         // Make sure our closureExpr expression can result in a closureExpr.
         if (!(closureType instanceof ClosureType || closureType instanceof AnyType)) {
@@ -175,27 +164,25 @@ class FunctionAppExpr implements Expression {
         // Cast insertion rule (CApp1).
         if (closureType instanceof AnyType) {
             // Wrap the closureExpr in a cast to ensure it can take our argument at runtime.
-            closureType = new ClosureType(argTypes[0], AnyType.singleton);
+            closureType = new ClosureType(argType, AnyType.singleton);
             closureExpr = new CastExpr(closureType, closureExpr);
         }
 
         // closureType is necessarily a ClosureType now. Great!
         ClosureType closureType_ = (ClosureType) closureType;
-        Type[] closureArgTypes = closureType_.getArgTypes();
+        Type closureArgType = closureType_.getArgType();
         Type closureReturnType = closureType_.getReturnType();
 
         // Cast insertion rule (CApp2).
-        for (int i = 0; i < argTypes.length; i++) {
-            if (!closureArgTypes[i].equals(argTypes[i])) {
-                if (!closureArgTypes[i].consistentWith(argTypes[i])) {
-                    throw new StratagemTypecheckException(
-                            "Inconsistent argument type: expected " + closureArgTypes[i] +
-                                                      ", got "      + argTypes[i]);
-                }
-
-                // Wrap the argument in a cast to ensure it can be given to our closureExpr at runtime.
-                args[i] = new CastExpr(closureArgTypes[i], args[i]);
+        if (!closureArgType.equals(argType)) {
+            if (!closureArgType.consistentWith(argType)) {
+                throw new StratagemTypecheckException(
+                        "Inconsistent argument type: expected " + closureArgType +
+                                                  ", got "      + argType);
             }
+
+            // Wrap the argument in a cast to ensure it can be given to our closureExpr at runtime.
+            arg = new CastExpr(closureArgType, arg);
         }
 
         // Typing rule (TApp).
@@ -204,11 +191,8 @@ class FunctionAppExpr implements Expression {
 
     public Value evaluate(ValueEnvironment env) {
         ClosureVal closure = (ClosureVal) closureExpr.evaluate(env);
-        List<Value> argVals = new ArrayList<>();
-        for (Expression arg : args) {
-            argVals.add(arg.evaluate(env));
-        }
-        return closure.apply(argVals);
+        Value argVal = arg.evaluate(env);
+        return closure.apply(argVal);
     }
 }
 
@@ -216,33 +200,21 @@ class FunctionAppExpr implements Expression {
  * A function declaration, which evaluates to a closure.
  */
 class FunctionDeclExpr implements Expression {
-    private static final String[] stringArrayHint = new String[0];
-    private static final Type[] typeArrayHint = new Type[0];
-
-    private String[] paramNames;
-    private Type[] paramTypes;
+    private String paramName;
+    private Type paramType;
     private Type returnType;  // Type that the programmer ascribed within the Stratagem code.
     private Expression body;
 
-    FunctionDeclExpr(String[] paramNames, Type[] paramTypes, Type returnType, Expression body) {
-        this.paramNames = paramNames;
-        this.paramTypes = paramTypes;
-        this.returnType = returnType;
-        this.body = body;
-    }
-
-    FunctionDeclExpr(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body) {
-        this.paramNames = paramNames.toArray(stringArrayHint);
-        this.paramTypes = paramTypes.toArray(typeArrayHint);
+    FunctionDeclExpr(String paramName, Type paramType, Type returnType, Expression body) {
+        this.paramName = paramName;
+        this.paramType = paramType;
         this.returnType = returnType;
         this.body = body;
     }
 
     public Type typecheck(TypeEnvironment outerEnv) {
         TypeEnvironment innerEnv = new TypeEnvironment(outerEnv);
-        for (int i = 0; i < paramNames.length; i++) {
-            innerEnv.createVar(paramNames[i], paramTypes[i]);
-        }
+        innerEnv.createVar(paramName, paramType);
         Type bodyT = body.typecheck(innerEnv);
         if (returnType == null) {
             // Infer the type for function body based on what we found.
@@ -253,11 +225,11 @@ class FunctionDeclExpr implements Expression {
                         "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
             }
         }
-        return new ClosureType(paramTypes[0], returnType);
+        return new ClosureType(paramType, returnType);
     }
 
     public Value evaluate(ValueEnvironment env) {
-        return new ClosureVal(paramNames, paramTypes, returnType, body, env);
+        return new ClosureVal(paramName, paramType, returnType, body, env);
     }
 }
 
