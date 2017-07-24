@@ -145,55 +145,65 @@ class CastExpr implements Expression {
 class FunctionAppExpr implements Expression {
     private static final Expression[] expressionArrayHint = new Expression[0];
 
-    private Expression f;
+    private Expression closureExpr;
     private Expression[] args;
 
-    FunctionAppExpr(Expression f, Expression[] args) {
-        this.f = f;
+    FunctionAppExpr(Expression closureExpr, Expression[] args) {
+        this.closureExpr = closureExpr;
         this.args = args;
     }
 
-    FunctionAppExpr(Expression f, List<Expression> args) {
-        this.f = f;
+    FunctionAppExpr(Expression closureExpr, List<Expression> args) {
+        this.closureExpr = closureExpr;
         this.args = args.toArray(expressionArrayHint);
     }
 
-    private ClosureType makeExpectedClosureType(TypeEnvironment env) {
+    public Type typecheck(TypeEnvironment env) {
+        // Typecheck the closureExpr and args under this application.
+        Type closureType = closureExpr.typecheck(env);
         Type[] argTypes = new Type[args.length];
-        for (int i = 0; i < args.length; i++) {
+
+        for (int i = 0; i < argTypes.length; i++) {
             argTypes[i] = args[i].typecheck(env);
         }
 
-        return new ClosureType(argTypes[0], AnyType.singleton);
-    }
-
-    public Type typecheck(TypeEnvironment env) {
-        Type closureType = f.typecheck(env);
-
-        // Technically this check is redundant with the next, but it provides a nicer error.
-        if (!(closureType instanceof AnyType || closureType instanceof ClosureType)) {
-            throw new StratagemTypecheckException("Expected a function: " + closureType.toString());
+        // Make sure our closureExpr expression can result in a closureExpr.
+        if (!(closureType instanceof ClosureType || closureType instanceof AnyType)) {
+            throw new StratagemTypecheckException("Expected a function, got " + closureType.toString());
         }
 
-        ClosureType expectedClosureType = makeExpectedClosureType(env);
-        if (!closureType.consistentWith(expectedClosureType)) {
-            throw new StratagemTypecheckException(
-                    "Inconsistent function type, expected: " + expectedClosureType + ", got: " + closureType);
-        }
-
-        // TODO: If types not equal, insert cast.
-
-        // If we are calling an Any, we can't tell its return type.
+        // Cast insertion rule (CApp1).
         if (closureType instanceof AnyType) {
-            return AnyType.singleton;
-        } else {
-            ClosureType knownClosure = (ClosureType) closureType;
-            return knownClosure.getReturnType();
+            // Wrap the closureExpr in a cast to ensure it can take our argument at runtime.
+            closureType = new ClosureType(argTypes[0], AnyType.singleton);
+            closureExpr = new CastExpr(closureType, closureExpr);
         }
+
+        // closureType is necessarily a ClosureType now. Great!
+        ClosureType closureType_ = (ClosureType) closureType;
+        Type[] closureArgTypes = closureType_.getArgTypes();
+        Type closureReturnType = closureType_.getReturnType();
+
+        // Cast insertion rule (CApp2).
+        for (int i = 0; i < argTypes.length; i++) {
+            if (!closureArgTypes[i].equals(argTypes[i])) {
+                if (!closureArgTypes[i].consistentWith(argTypes[i])) {
+                    throw new StratagemTypecheckException(
+                            "Inconsistent argument type: expected " + closureArgTypes[i] +
+                                                      ", got "      + argTypes[i]);
+                }
+
+                // Wrap the argument in a cast to ensure it can be given to our closureExpr at runtime.
+                args[i] = new CastExpr(closureArgTypes[i], args[i]);
+            }
+        }
+
+        // Typing rule (TApp).
+        return closureReturnType;
     }
 
     public Value evaluate(ValueEnvironment env) {
-        ClosureVal closure = (ClosureVal) f.evaluate(env);
+        ClosureVal closure = (ClosureVal) closureExpr.evaluate(env);
         List<Value> argVals = new ArrayList<>();
         for (Expression arg : args) {
             argVals.add(arg.evaluate(env));
