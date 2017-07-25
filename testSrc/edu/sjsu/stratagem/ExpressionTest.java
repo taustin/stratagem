@@ -191,4 +191,27 @@ public class ExpressionTest {
                 new VarExpr("n"));
         return new FunctionAppExpr(f, new ValueExpr(new IntVal(val)));
     }
+
+    @Test
+    // let n: ? = 1
+    // in fn(s: String): () { () }
+    //  throws StratagemCastException
+    public void testApplicationCastException() {
+        Expression n = makeAny(1);
+        FunctionDeclExpr f = new FunctionDeclExpr(
+                "s",
+                StringType.singleton,
+                UnitType.singleton,
+                new ValueExpr(UnitVal.singleton));
+        FunctionAppExpr app = new FunctionAppExpr(f, n);
+
+        app.typecheck(new TypeEnvironment());  // Insert cast that will fail.
+
+        try {
+            app.evaluate(new ValueEnvironment());
+        } catch (StratagemCastException e) {
+            return;  // pass
+        }
+        assertTrue("Failed to throw StratagemCastException", false);
+    }
 }
