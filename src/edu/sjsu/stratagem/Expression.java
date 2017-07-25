@@ -33,6 +33,7 @@ class BinOpExpr implements Expression {
     private Op op;
     private Expression e1;
     private Expression e2;
+
     BinOpExpr(Op op, Expression e1, Expression e2) {
         this.op = op;
         this.e1 = e1;
@@ -71,19 +72,16 @@ class BinOpExpr implements Expression {
             return new BoolVal(v1.equals(v2));
         case NE:
             return new BoolVal(!v1.equals(v2));
-        case ADD:
-            // Specifically skipping cases where we have two numbers
-            if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
-                return new StringVal(v1.toString() + v2.toString());
-            }
         }
 
         // Int operations case
         if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
-            throw new StratagemRuntimeException("Expected ints, but got " + v1 + " and " + v2);
+            throw new StratagemCastException("Expected ints, but got " + v1 + " and " + v2);
         }
+
         int i = ((IntVal) v1).toInt();
         int j = ((IntVal) v2).toInt();
+
         switch(op) {
         case ADD:
             return new IntVal(i + j);

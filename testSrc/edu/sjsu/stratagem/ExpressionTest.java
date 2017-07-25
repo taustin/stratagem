@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.sjsu.stratagem.exception.StratagemCastException;
 import edu.sjsu.stratagem.exception.StratagemException;
 import org.junit.Test;
 
@@ -180,13 +181,14 @@ public class ExpressionTest {
         assertEquals(v, alice);
     }
 
-    @Test
-    // "no" + "table"
-    public void testStringAppend() {
-        ValueEnvironment env = new ValueEnvironment();
-        Expression s1 = new ValueExpr(new StringVal("no"));
-        Expression s2 = new ValueExpr(new StringVal("table"));
-        Expression exp = new BinOpExpr(Op.ADD, s1, s2);
-        assertEquals(new StringVal("notable"), exp.evaluate(env));
+    // Produce an int value with type Any.
+    //   fn(n: Int): ? { val }
+    private Expression makeAny(int val) {
+        FunctionDeclExpr f = new FunctionDeclExpr(
+                "n",
+                IntType.singleton,
+                AnyType.singleton,
+                new VarExpr("n"));
+        return new FunctionAppExpr(f, new ValueExpr(new IntVal(val)));
     }
 }
