@@ -217,7 +217,7 @@ class FunctionDeclExpr implements Expression {
             // Infer the type for function body based on what we found.
             returnType = bodyT;
         } else {
-            if (!bodyT.equals(returnType)) {
+            if (!bodyT.consistentWith(returnType)) {
                 throw new StratagemTypecheckException(
                         "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
             }
