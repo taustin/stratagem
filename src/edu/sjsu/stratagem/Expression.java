@@ -4,7 +4,6 @@ import edu.sjsu.stratagem.exception.StratagemCastException;
 import edu.sjsu.stratagem.exception.StratagemRuntimeException;
 import edu.sjsu.stratagem.exception.StratagemTypecheckException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -156,13 +155,13 @@ class FunctionAppExpr implements Expression {
         Type closureType = closureExpr.typecheck(env);
         Type argType = arg.typecheck(env);
 
-        // Make sure our closureExpr expression can result in a closureExpr.
-        if (!(closureType instanceof ClosureType || closureType instanceof AnyType)) {
-            throw new StratagemTypecheckException("Expected a function, got " + closureType.toString());
+        // Make sure our closureExpr expression can result in a closure.
+        if (!(closureType instanceof ClosureType) && closureType != AnyType.singleton) {
+            throw new StratagemTypecheckException("Function called on a non-function: " + closureType);
         }
 
         // Cast insertion rule (CApp1).
-        if (closureType instanceof AnyType) {
+        if (closureType == AnyType.singleton) {
             // Wrap the closureExpr in a cast to ensure it can take our argument at runtime.
             closureType = new ClosureType(argType, AnyType.singleton);
             closureExpr = new CastExpr(closureType, closureExpr);
@@ -253,9 +252,17 @@ class IfExpr implements Expression {
         Type thnT = thn.typecheck(env);
         Type elsT = els.typecheck(env);
 
-        if (condT != BoolType.singleton) {
+        // Make sure our condition expression can result in a boolean.
+        if (condT != BoolType.singleton && condT != AnyType.singleton) {
             throw new StratagemTypecheckException("If-expression expected boolean in condition, got: " + condT);
         }
+
+        // Cast insertion rule (CIf).
+        if (condT == AnyType.singleton) {
+            // Wrap the condition expression in a cast to ensure it is a boolean at runtime.
+            cond = new CastExpr(BoolType.singleton, cond);
+        }
+
         if (!thnT.equals(elsT)) {
             throw new StratagemTypecheckException("If-expression branches have unequal type: " + thnT + " and " + elsT);
         }
