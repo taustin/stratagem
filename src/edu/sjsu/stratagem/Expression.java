@@ -257,15 +257,24 @@ class IfExpr implements Expression {
             throw new StratagemTypecheckException("If-expression expected boolean in condition, got: " + condT);
         }
 
-        // Cast insertion rule (CIf).
+        // Cast insertion rule (CIf1).
         if (condT == AnyType.singleton) {
             // Wrap the condition expression in a cast to ensure it is a boolean at runtime.
             cond = new CastExpr(BoolType.singleton, cond);
         }
 
         if (!thnT.equals(elsT)) {
-            throw new StratagemTypecheckException("If-expression branches have unequal type: " + thnT + " and " + elsT);
+            if (!thnT.consistentWith(elsT)) {
+                throw new StratagemTypecheckException(
+                        "If-expression branches have inconsistent types: " + thnT + " and " + elsT);
+            }
+
+            // Cast the right branch to the left.
+            // FIXME: Return the lowest possible type that's a supertype of both. (TIf, CIf2, CIF3)
+            els = new CastExpr(thnT, els);
         }
+
+        // Typing rule (TIf).
         return thnT;
     }
 
