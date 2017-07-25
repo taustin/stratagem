@@ -166,6 +166,8 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
             return StringType.singleton;
         } else if (ctx.TYPE_UNIT() != null) {
             return UnitType.singleton;
+        } else if (ctx.TYPE_ANY() != null) {
+            return AnyType.singleton;
         } else {
             throw new StratagemException("Unknown primitive type");
         }
