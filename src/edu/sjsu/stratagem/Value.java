@@ -119,8 +119,7 @@ class StringVal implements Value {
     }
     @Override
     public String toString() {
-        //return "'" + this.s + "'";
-        return this.s;
+        return "\"" + this.s + "\"";
     }
 }
 
