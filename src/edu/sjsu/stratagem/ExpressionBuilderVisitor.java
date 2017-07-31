@@ -179,7 +179,7 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
             return IntType.singleton;
         } else if (ctx.TYPE_STRING() != null) {
             return StringType.singleton;
-        } else if (ctx.UNIT() != null) {
+        } else if (ctx.TYPE_UNIT() != null) {
             return UnitType.singleton;
         } else {
             throw new StratagemException("Unknown primitive type");

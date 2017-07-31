@@ -10,19 +10,18 @@ ELSE     : 'else' ;
 LET      : 'let' ;
 
 // Literals
+LIT_UNIT   : 'unit' ;
 LIT_INT    : [1-9][0-9]* | '0' ;
 LIT_BOOL   : 'true' | 'false' ;
 LIT_STRING : '"' ( ESC | . )*? '"' ;
 fragment ESC : '\\' [tnr"\\] ;  // Matches: \t \n \r \" \\
 
 // Types
+TYPE_UNIT      : 'Unit' ;
 TYPE_INT       : 'Int' ;
 TYPE_BOOL      : 'Bool' ;
 TYPE_STRING    : 'String' ;
 TYPE_FUN       : '->' ;
-
-// Both a type and a literal
-UNIT      : '()' ;
 
 // Binary operators
 MUL       : '*' ;
@@ -75,7 +74,7 @@ expr: LPAREN expr RPAREN                                                        
     | LIT_INT                                                                     # int
     | LIT_BOOL                                                                    # bool
     | LIT_STRING                                                                  # string
-    | UNIT                                                                        # unit
+    | LIT_UNIT                                                                    # unit
     | ID                                                                          # id
     | IF LPAREN expr RPAREN LBRACE seq RBRACE ELSE LBRACE seq RBRACE              # if
     | LET ID COLON type ASSIGN expr IN expr                                       # let
@@ -89,7 +88,7 @@ params: LPAREN ID COLON type RPAREN
 args: LPAREN expr RPAREN
     ;
 
-type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | UNIT ;
+type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | TYPE_UNIT ;
 
 //          (domain                            ) TYPE_FUN codomain ;
 type_fun  : (type_prim | LPAREN type_fun RPAREN) TYPE_FUN type ;
