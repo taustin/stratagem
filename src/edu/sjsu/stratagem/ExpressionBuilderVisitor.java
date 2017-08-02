@@ -68,24 +68,17 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     @Override
     public Expression visitFunctionApp(StratagemParser.FunctionAppContext ctx) {
         Expression f = visit(ctx.expr());
-        List<Expression> args = new ArrayList<>();
         Expression arg = visit(ctx.args().getChild(1));
-        args.add(arg);
-        return new FunctionAppExpr(f, args);
+        return new FunctionAppExpr(f, arg);
     }
 
     @Override
     public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
-        List<String> paramNames = new ArrayList<>();
-        paramNames.add(ctx.params().ID().getText());
-
-        List<Type> paramTypes = new ArrayList<>();
-        paramTypes.add(parseType(ctx.params().type()));
-
+        String paramName = ctx.params().ID().getText();
+        Type paramType = parseType(ctx.params().type());
         Type returnType = parseType(ctx.type());
         Expression body = visit(ctx.seq());
-
-        return new FunctionDeclExpr(paramNames, paramTypes, returnType, body);
+        return new FunctionDeclExpr(paramName, paramType, returnType, body);
     }
 
     @Override
@@ -113,18 +106,10 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
         String id = ctx.ID().getText();
         Expression value = visit(ctx.expr(0));
         Expression body = visit(ctx.expr(1));
+        Type paramType = parseType(ctx.type());
 
-        List<String> paramNames = new ArrayList<>();
-        List<Type> paramTypes = new ArrayList<>();
-
-        paramNames.add(id);
-        paramTypes.add(parseType(ctx.type()));
-
-        FunctionDeclExpr implicitDecl = new FunctionDeclExpr(paramNames, paramTypes, null, body);
-
-        List<Expression> args = new ArrayList<>();
-        args.add(value);
-        return new FunctionAppExpr(implicitDecl, args);
+        FunctionDeclExpr implicitDecl = new FunctionDeclExpr(id, paramType, null, body);
+        return new FunctionAppExpr(implicitDecl, value);
     }
 
     @Override
@@ -181,6 +166,8 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
             return StringType.singleton;
         } else if (ctx.TYPE_UNIT() != null) {
             return UnitType.singleton;
+        } else if (ctx.TYPE_ANY() != null) {
+            return AnyType.singleton;
         } else {
             throw new StratagemException("Unknown primitive type");
         }

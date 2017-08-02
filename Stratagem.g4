@@ -22,6 +22,7 @@ TYPE_INT       : 'Int' ;
 TYPE_BOOL      : 'Bool' ;
 TYPE_STRING    : 'String' ;
 TYPE_FUN       : '->' ;
+TYPE_ANY       : '?' ;
 
 // Binary operators
 MUL       : '*' ;
@@ -88,7 +89,7 @@ params: LPAREN ID COLON type RPAREN
 args: LPAREN expr RPAREN
     ;
 
-type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | TYPE_UNIT ;
+type_prim : TYPE_INT | TYPE_BOOL | TYPE_STRING | TYPE_UNIT | TYPE_ANY ;
 
 //          (domain                            ) TYPE_FUN codomain ;
 type_fun  : (type_prim | LPAREN type_fun RPAREN) TYPE_FUN type ;

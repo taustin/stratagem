@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.sjsu.stratagem.exception.StratagemCastException;
 import edu.sjsu.stratagem.exception.StratagemException;
 import org.junit.Test;
 
@@ -94,36 +95,14 @@ public class ExpressionTest {
     // (function(x) { x; })(321);
     public void testIdFunction() {
         ValueEnvironment env = new ValueEnvironment();
-        List<String> paramNames = new ArrayList<>();
-        paramNames.add("x");
-        FunctionDeclExpr f = new FunctionDeclExpr(paramNames,
-                new ArrayList<>(),
+        FunctionDeclExpr f = new FunctionDeclExpr(
+                "x",
+                null,
                 null,
                 new VarExpr("x"));
-        List<Expression> args = new ArrayList<>();
-        args.add(new ValueExpr(new IntVal(321)));
-        FunctionAppExpr app = new FunctionAppExpr(f,args);
+        Expression arg = new ValueExpr(new IntVal(321));
+        FunctionAppExpr app = new FunctionAppExpr(f, arg);
         assertEquals(new IntVal(321), app.evaluate(env));
-    }
-
-    @Test
-    // (function(x,y) { x / y; })(8,2);
-    public void testDivFunction() {
-        ValueEnvironment env = new ValueEnvironment();
-        List<String> params = new ArrayList<>();
-        params.add("x");
-        params.add("y");
-        FunctionDeclExpr f = new FunctionDeclExpr(params,
-                new ArrayList<>(),
-                null,
-                new BinOpExpr(Op.DIVIDE,
-                        new VarExpr("x"),
-                        new VarExpr("y")));
-        List<Expression> args = new ArrayList<>();
-        args.add(new ValueExpr(new IntVal(8)));
-        args.add(new ValueExpr(new IntVal(2)));
-        FunctionAppExpr app = new FunctionAppExpr(f,args);
-        assertEquals(new IntVal(4), app.evaluate(env));
     }
 
     @Test
@@ -134,19 +113,17 @@ public class ExpressionTest {
 
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
-                new String[] {"unused"},
+                "unused",
                 null,
                 null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
-                new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
+                new FunctionAppExpr(innerDecl, new ValueExpr(bob)));
 
-        FunctionAppExpr outerApp = new FunctionAppExpr(
-                outerDecl,
-                new Expression[] { new ValueExpr(alice) });
+        FunctionAppExpr outerApp = new FunctionAppExpr(outerDecl, new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
         assertEquals(v, alice);
     }
@@ -159,19 +136,19 @@ public class ExpressionTest {
 
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
-                new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }));
+                new FunctionAppExpr(innerDecl, new ValueExpr(bob)));
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
                 outerDecl,
-                new Expression[] { new ValueExpr(alice) });
+                new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
         assertEquals(v, bob);
     }
@@ -184,33 +161,57 @@ public class ExpressionTest {
 
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
-                new String[] {"name"},
+                "name",
                 null,
                 null,
                 new SeqExpr(new Expression[] {
-                        new FunctionAppExpr(innerDecl, new Expression[] { new ValueExpr(bob) }),
+                        new FunctionAppExpr(innerDecl, new ValueExpr(bob)),
                         new VarExpr("name")
                 }));
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
                 outerDecl,
-                new Expression[] { new ValueExpr(alice) });
+                new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
         assertEquals(v, alice);
     }
 
+    // Produce an int value with type Any.
+    //   fn(n: Int): ? { val }
+    private Expression makeAny(int val) {
+        FunctionDeclExpr f = new FunctionDeclExpr(
+                "n",
+                IntType.singleton,
+                AnyType.singleton,
+                new VarExpr("n"));
+        return new FunctionAppExpr(f, new ValueExpr(new IntVal(val)));
+    }
+
     @Test
-    // "no" + "table"
-    public void testStringAppend() {
-        ValueEnvironment env = new ValueEnvironment();
-        Expression s1 = new ValueExpr(new StringVal("no"));
-        Expression s2 = new ValueExpr(new StringVal("table"));
-        Expression exp = new BinOpExpr(Op.ADD, s1, s2);
-        assertEquals(new StringVal("notable"), exp.evaluate(env));
+    // let n: ? = 1
+    // in fn(s: String): () { () }
+    //  throws StratagemCastException
+    public void testApplicationCastException() {
+        Expression n = makeAny(1);
+        FunctionDeclExpr f = new FunctionDeclExpr(
+                "s",
+                StringType.singleton,
+                UnitType.singleton,
+                new ValueExpr(UnitVal.singleton));
+        FunctionAppExpr app = new FunctionAppExpr(f, n);
+
+        app.typecheck(new TypeEnvironment());  // Insert cast that will fail.
+
+        try {
+            app.evaluate(new ValueEnvironment());
+        } catch (StratagemCastException e) {
+            return;  // pass
+        }
+        assertTrue("Failed to throw StratagemCastException", false);
     }
 }

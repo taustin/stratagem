@@ -1,10 +1,9 @@
 package edu.sjsu.stratagem;
 
+import edu.sjsu.stratagem.exception.StratagemCastException;
 import edu.sjsu.stratagem.exception.StratagemRuntimeException;
 import edu.sjsu.stratagem.exception.StratagemTypecheckException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,6 +33,7 @@ class BinOpExpr implements Expression {
     private Op op;
     private Expression e1;
     private Expression e2;
+
     BinOpExpr(Op op, Expression e1, Expression e2) {
         this.op = op;
         this.e1 = e1;
@@ -47,13 +47,13 @@ class BinOpExpr implements Expression {
         switch (op) {
         case EQ:
         case NE:
-            if (!t1.equals(t2)) {
+            if (!t1.consistentWith(t2)) {
                 throw new StratagemTypecheckException(
                         "Binary operator expected identical types, got: " + t1 + " and " + t2);
             }
             return BoolType.singleton;
         default:
-            if (t1 != IntType.singleton || t2 != IntType.singleton) {
+            if (!t1.consistentWith(IntType.singleton) || !t2.consistentWith(IntType.singleton)) {
                 throw new StratagemTypecheckException(
                         "Binary operator expected integer arguments, got: " + t1 + " and " + t2);
             }
@@ -72,19 +72,16 @@ class BinOpExpr implements Expression {
             return new BoolVal(v1.equals(v2));
         case NE:
             return new BoolVal(!v1.equals(v2));
-        case ADD:
-            // Specifically skipping cases where we have two numbers
-            if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
-                return new StringVal(v1.toString() + v2.toString());
-            }
         }
 
         // Int operations case
         if (!(v1 instanceof IntVal && v2 instanceof IntVal)) {
-            throw new StratagemRuntimeException("Expected ints, but got " + v1 + " and " + v2);
+            throw new StratagemCastException("Expected ints, but got " + v1 + " and " + v2);
         }
+
         int i = ((IntVal) v1).toInt();
         int j = ((IntVal) v2).toInt();
+
         switch(op) {
         case ADD:
             return new IntVal(i + j);
@@ -111,54 +108,88 @@ class BinOpExpr implements Expression {
 }
 
 /**
- * Function application.
+ * Runtime cast from a type involving an Any to a concrete type.
  */
-class FunctionAppExpr implements Expression {
-    private static final Expression[] expressionArrayHint = new Expression[0];
+class CastExpr implements Expression {
+    private Type target;
+    private Expression body;
 
-    private Expression f;
-    private Expression[] args;
-
-    FunctionAppExpr(Expression f, Expression[] args) {
-        this.f = f;
-        this.args = args;
-    }
-
-    FunctionAppExpr(Expression f, List<Expression> args) {
-        this.f = f;
-        this.args = args.toArray(expressionArrayHint);
+    CastExpr(Type target, Expression body) {
+        this.target = target;
+        this.body = body;
     }
 
     public Type typecheck(TypeEnvironment env) {
-        Type fType = f.typecheck(env);
+        // Continue typechecking the body, but discard its result here.
+        body.typecheck(env);
 
-        if (!(fType instanceof ClosureType)) {
-            throw new StratagemTypecheckException("Not a function: " + fType.toString());
-        }
-        ClosureType closureType = (ClosureType) fType;
-
-        Type[] argTypes = new Type[args.length];
-        for (int i = 0; i < args.length; i++) {
-            argTypes[i] = args[i].typecheck(env);
-        }
-
-        Type[] closureArgTypes = closureType.getArgTypes();
-        if (!Arrays.equals(closureArgTypes, argTypes)) {
-            throw new StratagemTypecheckException(
-                    "Incorrect argument types, expected: " + Arrays.toString(closureArgTypes) +
-                                                 ", got: " + Arrays.toString(argTypes));
-        }
-
-        return closureType.getReturnType();
+        return target;
     }
 
     public Value evaluate(ValueEnvironment env) {
-        ClosureVal closure = (ClosureVal) f.evaluate(env);
-        List<Value> argVals = new ArrayList<>();
-        for (Expression arg : args) {
-            argVals.add(arg.evaluate(env));
+        Value v = body.evaluate(env);
+        if (v.getType().consistentWith(target)) {
+            return v;
+        } else {
+            throw new StratagemCastException(null);
         }
-        return closure.apply(argVals);
+    }
+}
+
+/**
+ * Function application.
+ */
+class FunctionAppExpr implements Expression {
+    private Expression closureExpr;
+    private Expression arg;
+
+    FunctionAppExpr(Expression closureExpr, Expression arg) {
+        this.closureExpr = closureExpr;
+        this.arg = arg;
+    }
+
+    public Type typecheck(TypeEnvironment env) {
+        // Typecheck the closureExpr and args under this application.
+        Type closureType = closureExpr.typecheck(env);
+        Type argType = arg.typecheck(env);
+
+        // Make sure our closureExpr expression can result in a closure.
+        if (!(closureType instanceof ClosureType) && closureType != AnyType.singleton) {
+            throw new StratagemTypecheckException("Function called on a non-function: " + closureType);
+        }
+
+        // Cast insertion rule (CApp1).
+        if (closureType == AnyType.singleton) {
+            // Wrap the closureExpr in a cast to ensure it can take our argument at runtime.
+            closureType = new ClosureType(argType, AnyType.singleton);
+            closureExpr = new CastExpr(closureType, closureExpr);
+        }
+
+        // closureType is necessarily a ClosureType now. Great!
+        ClosureType closureType_ = (ClosureType) closureType;
+        Type closureArgType = closureType_.getArgType();
+        Type closureReturnType = closureType_.getReturnType();
+
+        // Cast insertion rule (CApp2).
+        if (!closureArgType.equals(argType)) {
+            if (!closureArgType.consistentWith(argType)) {
+                throw new StratagemTypecheckException(
+                        "Inconsistent argument type: expected " + closureArgType +
+                                                  ", got "      + argType);
+            }
+
+            // Wrap the argument in a cast to ensure it can be given to our closureExpr at runtime.
+            arg = new CastExpr(closureArgType, arg);
+        }
+
+        // Typing rule (TApp).
+        return closureReturnType;
+    }
+
+    public Value evaluate(ValueEnvironment env) {
+        ClosureVal closure = (ClosureVal) closureExpr.evaluate(env);
+        Value argVal = arg.evaluate(env);
+        return closure.apply(argVal);
     }
 }
 
@@ -166,48 +197,36 @@ class FunctionAppExpr implements Expression {
  * A function declaration, which evaluates to a closure.
  */
 class FunctionDeclExpr implements Expression {
-    private static final String[] stringArrayHint = new String[0];
-    private static final Type[] typeArrayHint = new Type[0];
-
-    private String[] paramNames;
-    private Type[] paramTypes;
+    private String paramName;
+    private Type paramType;
     private Type returnType;  // Type that the programmer ascribed within the Stratagem code.
     private Expression body;
 
-    FunctionDeclExpr(String[] paramNames, Type[] paramTypes, Type returnType, Expression body) {
-        this.paramNames = paramNames;
-        this.paramTypes = paramTypes;
-        this.returnType = returnType;
-        this.body = body;
-    }
-
-    FunctionDeclExpr(List<String> paramNames, List<Type> paramTypes, Type returnType, Expression body) {
-        this.paramNames = paramNames.toArray(stringArrayHint);
-        this.paramTypes = paramTypes.toArray(typeArrayHint);
+    FunctionDeclExpr(String paramName, Type paramType, Type returnType, Expression body) {
+        this.paramName = paramName;
+        this.paramType = paramType;
         this.returnType = returnType;
         this.body = body;
     }
 
     public Type typecheck(TypeEnvironment outerEnv) {
         TypeEnvironment innerEnv = new TypeEnvironment(outerEnv);
-        for (int i = 0; i < paramNames.length; i++) {
-            innerEnv.createVar(paramNames[i], paramTypes[i]);
-        }
+        innerEnv.createVar(paramName, paramType);
         Type bodyT = body.typecheck(innerEnv);
         if (returnType == null) {
             // Infer the type for function body based on what we found.
             returnType = bodyT;
         } else {
-            if (!bodyT.equals(returnType)) {
+            if (!bodyT.consistentWith(returnType)) {
                 throw new StratagemTypecheckException(
                         "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
             }
         }
-        return new ClosureType(paramTypes[0], returnType);
+        return new ClosureType(paramType, returnType);
     }
 
     public Value evaluate(ValueEnvironment env) {
-        return new ClosureVal(paramNames, paramTypes, returnType, body, env);
+        return new ClosureVal(paramName, paramType, returnType, body, env);
     }
 }
 
@@ -231,12 +250,29 @@ class IfExpr implements Expression {
         Type thnT = thn.typecheck(env);
         Type elsT = els.typecheck(env);
 
-        if (condT != BoolType.singleton) {
+        // Make sure our condition expression can result in a boolean.
+        if (condT != BoolType.singleton && condT != AnyType.singleton) {
             throw new StratagemTypecheckException("If-expression expected boolean in condition, got: " + condT);
         }
-        if (!thnT.equals(elsT)) {
-            throw new StratagemTypecheckException("If-expression branches have unequal type: " + thnT + " and " + elsT);
+
+        // Cast insertion rule (CIf1).
+        if (condT == AnyType.singleton) {
+            // Wrap the condition expression in a cast to ensure it is a boolean at runtime.
+            cond = new CastExpr(BoolType.singleton, cond);
         }
+
+        if (!thnT.equals(elsT)) {
+            if (!thnT.consistentWith(elsT)) {
+                throw new StratagemTypecheckException(
+                        "If-expression branches have inconsistent types: " + thnT + " and " + elsT);
+            }
+
+            // Cast the right branch to the left.
+            // FIXME: Return the lowest possible type that's a supertype of both. (TIf, CIf2, CIF3)
+            els = new CastExpr(thnT, els);
+        }
+
+        // Typing rule (TIf).
         return thnT;
     }
 
