@@ -1,5 +1,10 @@
 // Interesting examples
 
+let succ: Int -> Int = fn(n: Int): Int { n + 1 }
+in let anySucc: ? = succ
+in let anyTrue: ? = true
+in anySucc(anyTrue);
+
 let apply: (Int -> Int) -> Int -> Int =
     fn(f: Int -> Int): Int -> Int {
         fn(n: Int): Int {
