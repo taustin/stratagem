@@ -36,7 +36,7 @@ public class ExpressionTest {
     @Test
     public void testIfTrueExpr() {
         ValueEnvironment env = new ValueEnvironment();
-        IfExpr ife = new IfExpr(new ValueExpr(new BoolVal(true)),
+        IfExpr ife = new IfExpr(ValueExpr.trueSingleton,
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
         IntVal iv = (IntVal) ife.evaluate(env);
@@ -46,7 +46,7 @@ public class ExpressionTest {
     @Test
     public void testIfFalseExpr() {
         ValueEnvironment env = new ValueEnvironment();
-        IfExpr ife = new IfExpr(new ValueExpr(new BoolVal(false)),
+        IfExpr ife = new IfExpr(ValueExpr.falseSingleton,
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
         IntVal iv = (IntVal) ife.evaluate(env);

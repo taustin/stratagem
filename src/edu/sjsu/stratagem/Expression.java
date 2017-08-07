@@ -348,6 +348,10 @@ class SeqExpr implements Expression {
  * Stratagem constants.
  */
 class ValueExpr implements Expression {
+    public static final ValueExpr unitSingleton = new ValueExpr(UnitVal.singleton);
+    public static final ValueExpr trueSingleton = new ValueExpr(BoolVal.trueSingleton);
+    public static final ValueExpr falseSingleton = new ValueExpr(BoolVal.falseSingleton);
+
     private Value val;
 
     ValueExpr(Value v) {

@@ -29,7 +29,7 @@ public class CastTest {
                 "s",
                 StringType.singleton,
                 UnitType.singleton,
-                new ValueExpr(UnitVal.singleton));
+                ValueExpr.unitSingleton);
         FunctionAppExpr app = new FunctionAppExpr(f, n);
 
         app.typecheck(new TypeEnvironment());  // Insert cast that will fail.
