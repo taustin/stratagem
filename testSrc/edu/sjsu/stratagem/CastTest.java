@@ -44,9 +44,17 @@ public class CastTest {
 
     @Test
     // Assert that
-    //   if (true) { 1 } else { unit }
+    //   if (true) { true } else { unit }
     // has type ?
     public void testPrimitiveIfCast() {
+        IfExpr ifExpr = new IfExpr(
+                ValueExpr.trueSingleton,
+                ValueExpr.trueSingleton,
+                ValueExpr.unitSingleton);
+
+        Type ifResultType = ifExpr.typecheck(new TypeEnvironment());
+
+        assertEquals(AnyType.singleton, ifResultType);
     }
 
     @Test
