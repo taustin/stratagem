@@ -87,7 +87,7 @@ class UnitType implements Type {
 
     @Override
     public String toString() {
-        return "()";
+        return "Unit";
     }
 }
 
