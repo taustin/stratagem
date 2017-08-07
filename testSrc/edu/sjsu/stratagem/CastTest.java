@@ -83,6 +83,12 @@ public class CastTest {
     //   if (true) { identity } else { succ }
     // has type Int -> ?
     public void testSimpleFunctionIfCast() {
+        IfExpr ifExpr = new IfExpr(ValueExpr.trueSingleton, id, succ);
+
+        Type ifResultType = ifExpr.typecheck(new TypeEnvironment());
+        Type intToAny = new ClosureType(IntType.singleton, AnyType.singleton);
+
+        assertEquals(intToAny, ifResultType);
     }
 
     @Test
