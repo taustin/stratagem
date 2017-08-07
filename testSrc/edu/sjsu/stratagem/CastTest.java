@@ -64,5 +64,18 @@ public class CastTest {
     //   if (true) { fn1 } else { fn2 }
     // has type ? -> Int -> Int
     public void testComplexFunctionIfCast() {
+        Expression fn1 = TestUtils.makeTrivialFn(StringType.singleton, IntType.singleton, AnyType.singleton);
+        Expression fn2 = TestUtils.makeTrivialFn(UnitType.singleton, IntType.singleton, IntType.singleton);
+
+        IfExpr ifExpr = new IfExpr(ValueExpr.trueSingleton, fn1, fn2);
+
+        Type ifResultType = ifExpr.typecheck(new TypeEnvironment());
+        Type anyToIntToInt = new ClosureType(
+                AnyType.singleton,
+                new ClosureType(
+                        IntType.singleton,
+                        IntType.singleton));
+
+        assertEquals(anyToIntToInt, ifResultType);
     }
 }
