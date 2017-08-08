@@ -9,14 +9,14 @@ let apply: (Int -> Int) -> Int -> Int =
 in let plusOne: Int -> Int = fn(n: Int): Int { n + 1 }
 in apply(plusOne)(2) == 3;
 
-let fix: ? =
-    fn(f: ?): ? {
-        fn(x: ?): ? {
-            f(fn(y: ?): ? {
+let fix =
+    fn(f) {
+        fn(x) {
+            f(fn(y) {
                 x(x)(y)
             })
-        }(fn(x: ?): ? {
-            f(fn(y: ?): ? {
+        }(fn(x) {
+            f(fn(y) {
                 x(x)(y)
             })
         })
