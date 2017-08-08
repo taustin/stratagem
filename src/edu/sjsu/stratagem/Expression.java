@@ -261,19 +261,27 @@ class IfExpr implements Expression {
             cond = new CastExpr(BoolType.singleton, cond);
         }
 
-        if (!thnT.equals(elsT)) {
-            if (!thnT.consistentWith(elsT)) {
-                throw new StratagemTypecheckException(
-                        "If-expression branches have inconsistent types: " + thnT + " and " + elsT);
-            }
+        // Find the lowest type that is a supertype of both the then-branch and the else-branch.
+        Type supertype = thnT.findSupertypeWith(elsT);
 
-            // Cast the right branch to the left.
-            // FIXME: Return the lowest possible type that's a supertype of both. (TIf, CIf2, CIF3)
-            els = new CastExpr(thnT, els);
+        // Since it's a supertype of both, it should be consistent with the then-branch and the else-branch.
+        assert(thnT.consistentWith(supertype));
+        assert(elsT.consistentWith(supertype));
+
+        // Cast insertion rule (CIf2).
+        if (!thnT.equals(supertype)) {
+            // Cast the left branch to the supertype of the left and right.
+            thn = new CastExpr(supertype, thn);
+        }
+
+        // Cast insertion rule (CIf3).
+        if (!elsT.equals(supertype)) {
+            // Cast the right branch to the supertype of the left and right.
+            els = new CastExpr(supertype, els);
         }
 
         // Typing rule (TIf).
-        return thnT;
+        return supertype;
     }
 
     public Value evaluate(ValueEnvironment env) {
