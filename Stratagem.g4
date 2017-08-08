@@ -71,19 +71,19 @@ seq: expr (SEPARATOR expr)* ;
 
 expr: LPAREN expr RPAREN                                                          # parens
     | expr args                                                                   # functionApp
-    | FUNCTION params COLON type LBRACE seq RBRACE                                # functionDecl
+    | FUNCTION params (COLON type)? LBRACE seq RBRACE                             # functionDecl
     | LIT_INT                                                                     # int
     | LIT_BOOL                                                                    # bool
     | LIT_STRING                                                                  # string
     | LIT_UNIT                                                                    # unit
     | ID                                                                          # id
     | IF LPAREN expr RPAREN LBRACE seq RBRACE ELSE LBRACE seq RBRACE              # if
-    | LET ID COLON type ASSIGN expr IN expr                                       # let
+    | LET ID (COLON type)? ASSIGN expr IN expr                                    # let
     | expr op=( ADD | SUB | MUL | DIV | MOD | GT | GE | LT | LE | EQ | NE ) expr  # binOp
     | PRINT args                                                                  # print
     ;
 
-params: LPAREN ID COLON type RPAREN
+params: LPAREN ID (COLON type)? RPAREN
       ;
 
 args: LPAREN expr RPAREN
