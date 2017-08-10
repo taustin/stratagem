@@ -74,10 +74,16 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 
     @Override
     public Expression visitFunctionDecl(StratagemParser.FunctionDeclContext ctx) {
+        StratagemParser.TypeContext paramTypeContext = ctx.params().type();
+        StratagemParser.TypeContext returnTypeContext = ctx.type();
+
         String paramName = ctx.params().ID().getText();
-        Type paramType = parseType(ctx.params().type());
-        Type returnType = parseType(ctx.type());
+        Type paramType = paramTypeContext == null ? AnyType.singleton
+                                                  : parseType(paramTypeContext);
+        Type returnType = returnTypeContext == null ? AnyType.singleton
+                                                    : parseType(returnTypeContext);
         Expression body = visit(ctx.seq());
+
         return new FunctionDeclExpr(paramName, paramType, returnType, body);
     }
 
@@ -103,10 +109,13 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
 
     @Override
     public Expression visitLet(StratagemParser.LetContext ctx) {
+        StratagemParser.TypeContext typeContext = ctx.type();
+
         String id = ctx.ID().getText();
         Expression value = visit(ctx.expr(0));
         Expression body = visit(ctx.expr(1));
-        Type paramType = parseType(ctx.type());
+        Type paramType = typeContext == null ? AnyType.singleton
+                                             : parseType(typeContext);
 
         FunctionDeclExpr implicitDecl = new FunctionDeclExpr(id, paramType, null, body);
         return new FunctionAppExpr(implicitDecl, value);
