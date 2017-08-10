@@ -6,6 +6,7 @@ package edu.sjsu.stratagem;
  */
 public interface Type {
     boolean consistentWith(Type other);
+    Type findSupertypeWith(Type other);
 }
 
 //NOTE: Using package access so that all implementations of Type
@@ -19,6 +20,10 @@ class AnyType implements Type {
 
     public boolean consistentWith(Type other) {
         return true;
+    }
+
+    public Type findSupertypeWith(Type other) {
+        return AnyType.singleton;
     }
 
     @Override
@@ -37,6 +42,11 @@ class BoolType implements Type {
         return other instanceof BoolType || other instanceof AnyType;
     }
 
+    public Type findSupertypeWith(Type other) {
+        return other instanceof BoolType ? BoolType.singleton
+                                         : AnyType.singleton;
+    }
+
     @Override
     public String toString() {
         return "Bool";
@@ -51,6 +61,11 @@ class IntType implements Type {
 
     public boolean consistentWith(Type other) {
         return other instanceof IntType || other instanceof AnyType;
+    }
+
+    public Type findSupertypeWith(Type other) {
+        return other instanceof IntType ? IntType.singleton
+                                        : AnyType.singleton;
     }
 
     @Override
@@ -69,6 +84,11 @@ class StringType implements Type {
         return other instanceof StringType || other instanceof AnyType;
     }
 
+    public Type findSupertypeWith(Type other) {
+        return other instanceof StringType ? StringType.singleton
+                                           : AnyType.singleton;
+    }
+
     @Override
     public String toString() {
         return "String";
@@ -85,9 +105,14 @@ class UnitType implements Type {
         return other instanceof UnitType || other instanceof AnyType;
     }
 
+    public Type findSupertypeWith(Type other) {
+        return other instanceof UnitType ? UnitType.singleton
+                                         : AnyType.singleton;
+    }
+
     @Override
     public String toString() {
-        return "()";
+        return "Unit";
     }
 }
 
@@ -120,6 +145,27 @@ class ClosureType implements Type {
         }
         ClosureType that = (ClosureType)other;
         return arg.consistentWith(that.arg) && ret.consistentWith(that.ret);
+    }
+
+    public Type findSupertypeWith(Type other) {
+        if (!(other instanceof ClosureType)) {
+            return AnyType.singleton;
+        }
+        ClosureType that = (ClosureType)other;
+        return new ClosureType(
+                arg.findSupertypeWith(that.arg),
+                ret.findSupertypeWith(that.ret));
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof ClosureType)) {
+            return false;
+        }
+
+        ClosureType that = (ClosureType)other;
+
+        return arg.equals(that.arg) && ret.equals(that.ret);
     }
 
     @Override

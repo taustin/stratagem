@@ -2,10 +2,6 @@ package edu.sjsu.stratagem;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.sjsu.stratagem.exception.StratagemCastException;
 import edu.sjsu.stratagem.exception.StratagemException;
 import org.junit.Test;
 
@@ -40,7 +36,7 @@ public class ExpressionTest {
     @Test
     public void testIfTrueExpr() {
         ValueEnvironment env = new ValueEnvironment();
-        IfExpr ife = new IfExpr(new ValueExpr(new BoolVal(true)),
+        IfExpr ife = new IfExpr(ValueExpr.trueSingleton,
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
         IntVal iv = (IntVal) ife.evaluate(env);
@@ -50,7 +46,7 @@ public class ExpressionTest {
     @Test
     public void testIfFalseExpr() {
         ValueEnvironment env = new ValueEnvironment();
-        IfExpr ife = new IfExpr(new ValueExpr(new BoolVal(false)),
+        IfExpr ife = new IfExpr(ValueExpr.falseSingleton,
                 new ValueExpr(new IntVal(1)),
                 new ValueExpr(new IntVal(2)));
         IntVal iv = (IntVal) ife.evaluate(env);
@@ -179,39 +175,5 @@ public class ExpressionTest {
                 new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
         assertEquals(v, alice);
-    }
-
-    // Produce an int value with type Any.
-    //   fn(n: Int): ? { val }
-    private Expression makeAny(int val) {
-        FunctionDeclExpr f = new FunctionDeclExpr(
-                "n",
-                IntType.singleton,
-                AnyType.singleton,
-                new VarExpr("n"));
-        return new FunctionAppExpr(f, new ValueExpr(new IntVal(val)));
-    }
-
-    @Test
-    // let n: ? = 1
-    // in fn(s: String): () { () }
-    //  throws StratagemCastException
-    public void testApplicationCastException() {
-        Expression n = makeAny(1);
-        FunctionDeclExpr f = new FunctionDeclExpr(
-                "s",
-                StringType.singleton,
-                UnitType.singleton,
-                new ValueExpr(UnitVal.singleton));
-        FunctionAppExpr app = new FunctionAppExpr(f, n);
-
-        app.typecheck(new TypeEnvironment());  // Insert cast that will fail.
-
-        try {
-            app.evaluate(new ValueEnvironment());
-        } catch (StratagemCastException e) {
-            return;  // pass
-        }
-        assertTrue("Failed to throw StratagemCastException", false);
     }
 }

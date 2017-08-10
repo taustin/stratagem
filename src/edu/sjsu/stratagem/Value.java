@@ -17,6 +17,9 @@ public interface Value {
  * Boolean values.
  */
 class BoolVal implements Value {
+    public static final BoolVal trueSingleton = new BoolVal(true);
+    public static final BoolVal falseSingleton = new BoolVal(false);
+
     private boolean boolVal;
     public BoolVal(boolean b) { this.boolVal = b; }
     public Type getType() {
@@ -135,6 +138,6 @@ class UnitVal implements Value {
     }
     @Override
     public String toString() {
-        return "()";
+        return "unit";
     }
 }
