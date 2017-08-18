@@ -2,7 +2,7 @@ package edu.sjsu.stratagem;
 
 class TestUtils {
     // Produce an value with type Any, as in:
-    //   fn(x: ?): ? { x }(val)
+    //   fn(x: ?) { x }(val)
     // which has type
     //   ?
     // and which evaluates to
@@ -16,18 +16,16 @@ class TestUtils {
     }
 
     // The identity function:
-    //   fn(x: ?): ? { x }
+    //   fn(x: ?) { x }
     static final FunctionDeclExpr id = new FunctionDeclExpr(
             "x",
-            AnyType.singleton,
             AnyType.singleton,
             new VarExpr("x"));
 
     // The successor function:
-    //   fn(n: Int): Int { n + 1 }
+    //   fn(n: Int) { n + 1 }
     static final FunctionDeclExpr succ = new FunctionDeclExpr(
             "n",
-            IntType.singleton,
             IntType.singleton,
             new BinOpExpr(Op.ADD, new VarExpr("n"), new ValueExpr(new IntVal(1))));
 
@@ -56,7 +54,6 @@ class TestUtils {
             return new FunctionDeclExpr(
                     "x",
                     closureType.getArgType(),
-                    closureType.getReturnType(),
                     makeTrivialExpression(closureType.getReturnType()));
         } else if (type instanceof IntType) {
             return new ValueExpr(new IntVal(0));

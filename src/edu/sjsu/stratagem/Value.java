@@ -66,8 +66,7 @@ class ClosureVal implements Value {
 
     public String toString() {
         StringBuilder s = new StringBuilder("function(");
-        String sep = "";
-        s.append(sep).append(paramName).append(": ").append(paramType);
+        s.append(paramName).append(": ").append(paramType);
         s.append("): ").append(returnType).append(" {...}");
 
         return s.toString();

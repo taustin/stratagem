@@ -71,7 +71,7 @@ seq: expr (SEPARATOR expr)* ;
 
 expr: LPAREN expr RPAREN                                                          # parens
     | expr args                                                                   # functionApp
-    | FUNCTION params (COLON type)? LBRACE seq RBRACE                             # functionDecl
+    | FUNCTION params LBRACE seq RBRACE                                           # functionDecl
     | LIT_INT                                                                     # int
     | LIT_BOOL                                                                    # bool
     | LIT_STRING                                                                  # string
