@@ -1,18 +1,13 @@
 // Interesting examples
 
-let succ: Int -> Int = fn(n: Int): Int { n + 1 }
-in let anySucc: ? = succ
-in let anyTrue: ? = true
-in anySucc(anyTrue);
-
 let apply: (Int -> Int) -> Int -> Int =
-    fn(f: Int -> Int): Int -> Int {
-        fn(n: Int): Int {
+    fn(f: Int -> Int) {
+        fn(n: Int) {
             f(n)
         }
     }
-in let plusOne: Int -> Int = fn(n: Int): Int { n + 1 }
-in apply(plusOne)(2) == 3;
+in let succ: Int -> Int = fn(n: Int) { n + 1 }
+in apply(succ)(2) == 3;  // True
 
 let fix =
     fn(f) {
@@ -27,8 +22,8 @@ let fix =
         })
     }
 in let fix_factorial: (Int -> Int) -> Int -> Int =
-    fn(f: Int -> Int): Int -> Int {
-        fn(n: Int): Int {
+    fn(f: Int -> Int) {
+        fn(n: Int) {
             if (n == 0) {
                 1
             } else {
@@ -36,4 +31,5 @@ in let fix_factorial: (Int -> Int) -> Int -> Int =
             }
         }
     }
-in fix(fix_factorial)(4)  // 24
+in let factorial: Int -> Int = fix(fix_factorial)
+in factorial(4)  // 24

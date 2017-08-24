@@ -1,0 +1,4 @@
+let succ: Int -> Int = fn(n: Int) { n + 1 }
+in let anySucc: ? = succ
+in let anyTrue: ? = true
+in anySucc(anyTrue)  // Throws exception

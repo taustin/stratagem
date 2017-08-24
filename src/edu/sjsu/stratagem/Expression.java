@@ -199,33 +199,36 @@ class FunctionAppExpr implements Expression {
 class FunctionDeclExpr implements Expression {
     private String paramName;
     private Type paramType;
-    private Type returnType;  // Type that the programmer ascribed within the Stratagem code.
+    private Type returnType;
     private Expression body;
 
-    FunctionDeclExpr(String paramName, Type paramType, Type returnType, Expression body) {
+    FunctionDeclExpr(String paramName, Type paramType, Expression body) {
         this.paramName = paramName;
         this.paramType = paramType;
-        this.returnType = returnType;
+        this.returnType = null;
         this.body = body;
+
+        if (paramType == null) {
+            throw new StratagemTypecheckException(
+                    "FunctionDeclExpr was given a null param type... this means it can't calculate its type");
+        }
     }
 
     public Type typecheck(TypeEnvironment outerEnv) {
         TypeEnvironment innerEnv = new TypeEnvironment(outerEnv);
         innerEnv.createVar(paramName, paramType);
-        Type bodyT = body.typecheck(innerEnv);
-        if (returnType == null) {
-            // Infer the type for function body based on what we found.
-            returnType = bodyT;
-        } else {
-            if (!bodyT.consistentWith(returnType)) {
-                throw new StratagemTypecheckException(
-                        "Function's body doesn't have ascribed type, ascribed: " + returnType + ", had: " + bodyT);
-            }
-        }
+
+        // Infer the type for function body based on what we find.
+        returnType = body.typecheck(innerEnv);
+
         return new ClosureType(paramType, returnType);
     }
 
     public Value evaluate(ValueEnvironment env) {
+        if (returnType == null) {
+            throw new StratagemRuntimeException(
+                    "FunctionDeclExpr has a null return type... did you typecheck() it yet?");
+        }
         return new ClosureVal(paramName, paramType, returnType, body, env);
     }
 }
@@ -309,6 +312,7 @@ class PrintExpr implements Expression {
     }
 
     public Type typecheck(TypeEnvironment env) {
+        arg.typecheck(env);
         return UnitType.singleton;
     }
 
@@ -340,7 +344,11 @@ class SeqExpr implements Expression {
     }
 
     public Type typecheck(TypeEnvironment env) {
-        return exprs[exprs.length - 1].typecheck(env);
+        Type type = UnitType.singleton;
+        for (Expression e : exprs) {
+            type = e.typecheck(env);
+        }
+        return type;
     }
 
     public Value evaluate(ValueEnvironment env) {

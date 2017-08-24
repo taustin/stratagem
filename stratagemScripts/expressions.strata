@@ -8,22 +8,20 @@ true;
 unit;
 
 // Function declaration
-fn(n: Int): Int { 1 };
-fn(n): Int { 1 };
 fn(n: Int) { 1 };
 fn(n) { 1 };
 
 // Function application
-fn(n: Int): Int { 1 }(2);
+fn(n: Int) { 1 }(2);
 
-fn(x: Int): Int -> Int {
-    fn(y: Int): Int {
+fn(x: Int) {
+    fn(y: Int) {
         1
     }
 }(2)(3);
 
 // Id
-fn(n: Int): Int { n }(1);
+fn(n: Int) { n }(1);
 
 // Let
 let one: Int = 1 in 2;

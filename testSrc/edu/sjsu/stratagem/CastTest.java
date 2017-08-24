@@ -9,7 +9,7 @@ public class CastTest {
     @Test
     // Assert that
     //   let n: ? = 1 in
-    //   fn(s: String): Unit { unit }
+    //   fn(s: String) { unit }
     // throws a StratagemCastException
     public void testApplicationCastException() {
         Expression f = TestUtils.makeTrivialFn(StringType.singleton, UnitType.singleton);
@@ -131,8 +131,8 @@ public class CastTest {
 
     @Test
     // Assert that
-    //   let identity: ? -> ? = fn(x: ?): ? { x } in
-    //   let succ: Int -> Int = fn(n: Int): Int { n + 1 } in
+    //   let identity: ? -> ? = fn(x: ?) { x } in
+    //   let succ: Int -> Int = fn(n: Int) { n + 1 } in
     //   if (true) { identity } else { succ }
     // has type ? -> ?
     public void testSimpleFunctionIfCast5() {

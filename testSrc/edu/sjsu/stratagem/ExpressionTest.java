@@ -93,9 +93,9 @@ public class ExpressionTest {
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr f = new FunctionDeclExpr(
                 "x",
-                null,
-                null,
+                AnyType.singleton,
                 new VarExpr("x"));
+        f.typecheck(new TypeEnvironment());
         Expression arg = new ValueExpr(new IntVal(321));
         FunctionAppExpr app = new FunctionAppExpr(f, arg);
         assertEquals(new IntVal(321), app.evaluate(env));
@@ -110,14 +110,13 @@ public class ExpressionTest {
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 "unused",
-                null,
-                null,
+                StringType.singleton,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
                 "name",
-                null,
-                null,
+                StringType.singleton,
                 new FunctionAppExpr(innerDecl, new ValueExpr(bob)));
+        outerDecl.typecheck(new TypeEnvironment());
 
         FunctionAppExpr outerApp = new FunctionAppExpr(outerDecl, new ValueExpr(alice));
         Value v = outerApp.evaluate(env);
@@ -133,14 +132,13 @@ public class ExpressionTest {
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 "name",
-                null,
-                null,
+                StringType.singleton,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
                 "name",
-                null,
-                null,
+                StringType.singleton,
                 new FunctionAppExpr(innerDecl, new ValueExpr(bob)));
+        outerDecl.typecheck(new TypeEnvironment());
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
                 outerDecl,
@@ -158,17 +156,16 @@ public class ExpressionTest {
         ValueEnvironment env = new ValueEnvironment();
         FunctionDeclExpr innerDecl = new FunctionDeclExpr(
                 "name",
-                null,
-                null,
+                StringType.singleton,
                 new VarExpr("name"));
         FunctionDeclExpr outerDecl = new FunctionDeclExpr(
                 "name",
-                null,
-                null,
+                StringType.singleton,
                 new SeqExpr(new Expression[] {
                         new FunctionAppExpr(innerDecl, new ValueExpr(bob)),
                         new VarExpr("name")
                 }));
+        outerDecl.typecheck(new TypeEnvironment());
 
         FunctionAppExpr outerApp = new FunctionAppExpr(
                 outerDecl,
