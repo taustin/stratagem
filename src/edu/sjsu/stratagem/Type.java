@@ -54,6 +54,64 @@ class BoolType implements Type {
 }
 
 /**
+ * A closure's type. Closures take one argument and have one return value.
+ */
+class ClosureType implements Type {
+    private Type arg;
+    private Type ret;
+
+    public ClosureType(Type arg, Type ret) {
+        this.arg = arg;
+        this.ret = ret;
+    }
+
+    public Type getArgType() {
+        return arg;
+    }
+
+    public Type getReturnType() {
+        return ret;
+    }
+
+    public boolean consistentWith(Type other) {
+        if (other instanceof AnyType) {
+            return true;
+        }
+        if (!(other instanceof ClosureType)) {
+            return false;
+        }
+        ClosureType that = (ClosureType)other;
+        return arg.consistentWith(that.arg) && ret.consistentWith(that.ret);
+    }
+
+    public Type findSupertypeWith(Type other) {
+        if (!(other instanceof ClosureType)) {
+            return AnyType.singleton;
+        }
+        ClosureType that = (ClosureType)other;
+        return new ClosureType(
+                arg.findSupertypeWith(that.arg),
+                ret.findSupertypeWith(that.ret));
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof ClosureType)) {
+            return false;
+        }
+
+        ClosureType that = (ClosureType)other;
+
+        return arg.equals(that.arg) && ret.equals(that.ret);
+    }
+
+    @Override
+    public String toString() {
+        return arg + " -> " + ret;
+    }
+}
+
+/**
  * Numbers. Only integers are supported.
  */
 class IntType implements Type {
@@ -113,63 +171,5 @@ class UnitType implements Type {
     @Override
     public String toString() {
         return "Unit";
-    }
-}
-
-/**
- * A closure's type. Closures take one argument and have one return value.
- */
-class ClosureType implements Type {
-    private Type arg;
-    private Type ret;
-
-    public ClosureType(Type arg, Type ret) {
-        this.arg = arg;
-        this.ret = ret;
-    }
-
-    public Type getArgType() {
-        return arg;
-    }
-
-    public Type getReturnType() {
-        return ret;
-    }
-
-    public boolean consistentWith(Type other) {
-        if (other instanceof AnyType) {
-            return true;
-        }
-        if (!(other instanceof ClosureType)) {
-            return false;
-        }
-        ClosureType that = (ClosureType)other;
-        return arg.consistentWith(that.arg) && ret.consistentWith(that.ret);
-    }
-
-    public Type findSupertypeWith(Type other) {
-        if (!(other instanceof ClosureType)) {
-            return AnyType.singleton;
-        }
-        ClosureType that = (ClosureType)other;
-        return new ClosureType(
-                arg.findSupertypeWith(that.arg),
-                ret.findSupertypeWith(that.ret));
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (!(other instanceof ClosureType)) {
-            return false;
-        }
-
-        ClosureType that = (ClosureType)other;
-
-        return arg.equals(that.arg) && ret.equals(that.ret);
-    }
-
-    @Override
-    public String toString() {
-        return arg + " -> " + ret;
     }
 }
