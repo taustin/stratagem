@@ -7,6 +7,11 @@ true;
 "three";
 unit;
 
+// References
+ref 1;
+!ref 1;
+ref 1 <- 2;
+
 // Function declaration
 fn(n: Int) { 1 };
 fn(n) { 1 };
