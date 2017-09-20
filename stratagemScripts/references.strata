@@ -1,0 +1,5 @@
+let r: Ref Int = ref 1 in
+let a = print(!r) in  // prints 1
+let b = r <- 2 in
+let c = print(!r) in  // prints 2
+unit
