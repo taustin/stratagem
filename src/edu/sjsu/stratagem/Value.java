@@ -8,8 +8,8 @@ public interface Value {
     Type getType();
 }
 
-//NOTE: Using package access so that all implementations of Value
-//can be included in the same file.
+// NOTE: Using package access so that all implementations of Value
+// can be included in the same file.
 
 /**
  * Boolean values.
@@ -19,16 +19,28 @@ class BoolVal implements Value {
     public static final BoolVal falseSingleton = new BoolVal(false);
 
     private boolean boolVal;
-    public BoolVal(boolean b) { this.boolVal = b; }
+
+    public BoolVal(boolean b) {
+        this.boolVal = b;
+    }
+
     public Type getType() {
         return BoolType.singleton;
     }
-    public boolean toBoolean() { return this.boolVal; }
+
+    public boolean toBoolean() {
+        return this.boolVal;
+    }
+
     @Override
     public boolean equals(Object that) {
-        if (!(that instanceof BoolVal)) return false;
+        if (!(that instanceof BoolVal)) {
+            return false;
+        }
+
         return this.boolVal == ((BoolVal) that).boolVal;
     }
+
     @Override
     public String toString() {
         return "" + this.boolVal;
@@ -87,16 +99,28 @@ class ClosureVal implements Value {
  */
 class IntVal implements Value {
     private int i;
-    public IntVal(int i) { this.i = i; }
+
+    public IntVal(int i) {
+        this.i = i;
+    }
+
     public Type getType() {
         return IntType.singleton;
     }
-    public int toInt() { return this.i; }
+
+    public int toInt() {
+        return this.i;
+    }
+
     @Override
     public boolean equals(Object that) {
-        if (!(that instanceof IntVal)) return false;
+        if (!(that instanceof IntVal)) {
+            return false;
+        }
+
         return this.i == ((IntVal) that).i;
     }
+
     @Override
     public String toString() {
         return "" + this.i;
@@ -108,15 +132,24 @@ class IntVal implements Value {
  */
 class StringVal implements Value {
     private String s;
-    public StringVal(String s) { this.s = s; }
+
+    public StringVal(String s) {
+        this.s = s;
+    }
+
     public Type getType() {
         return StringType.singleton;
     }
+
     @Override
     public boolean equals(Object that) {
-        if (!(that instanceof StringVal)) return false;
-        return this.s.equals(((StringVal)that).s);
+        if (!(that instanceof StringVal)) {
+            return false;
+        }
+
+        return this.s.equals(((StringVal) that).s);
     }
+
     @Override
     public String toString() {
         return "\"" + this.s + "\"";
@@ -129,10 +162,12 @@ class UnitVal implements Value {
     public Type getType() {
         return UnitType.singleton;
     }
+
     @Override
     public boolean equals(Object that) {
         return (that instanceof UnitVal);
     }
+
     @Override
     public String toString() {
         return "unit";
