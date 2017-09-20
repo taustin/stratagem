@@ -1,7 +1,5 @@
 package edu.sjsu.stratagem;
 
-import java.util.List;
-
 /**
  * Values in Stratagem.
  * Evaluating a Stratagem expression should return a Stratagem value.
