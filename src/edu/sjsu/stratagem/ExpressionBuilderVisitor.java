@@ -9,6 +9,13 @@ import edu.sjsu.stratagem.parser.StratagemParser;
 
 public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     @Override
+    public Expression visitAssign(StratagemParser.AssignContext ctx) {
+        Expression ref = visit(ctx.expr(0));
+        Expression value = visit(ctx.expr(1));
+        return new AssignExpr(ref, value);
+    }
+
+    @Override
     public Expression visitBinOp(StratagemParser.BinOpContext ctx) {
         Expression lhs = visit(ctx.expr(0));
         Expression rhs = visit(ctx.expr(1));
@@ -63,6 +70,12 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     public Expression visitBool(StratagemParser.BoolContext ctx) {
         boolean val = Boolean.valueOf(ctx.LIT_BOOL().getText());
         return new ValueExpr(new BoolVal(val));
+    }
+
+    @Override
+    public Expression visitDeref(StratagemParser.DerefContext ctx) {
+        Expression ref = visit(ctx.expr());
+        return new DerefExpr(ref);
     }
 
     @Override
@@ -135,6 +148,12 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     }
 
     @Override
+    public Expression visitRef(StratagemParser.RefContext ctx) {
+        Expression value = visit(ctx.expr());
+        return new RefExpr(value);
+    }
+
+    @Override
     public Expression visitSeq(StratagemParser.SeqContext ctx) {
         List<Expression> exprs = new ArrayList<>();
         for (int i=0; i<ctx.expr().size(); i++) {
@@ -158,8 +177,12 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
     private Type parseType(StratagemParser.TypeContext ctx) {
         if (ctx.type_prim() != null) {
             return parsePrimitiveType(ctx.type_prim());
-        } else {
+        } else if (ctx.type_ref() != null) {
+            return parseReferenceType(ctx.type_ref());
+        } else if (ctx.type_fun() != null) {
             return parseClosureType(ctx.type_fun());
+        } else {
+            throw new StratagemException("Unknown type");
         }
     }
 
@@ -177,6 +200,11 @@ public class ExpressionBuilderVisitor extends StratagemBaseVisitor<Expression>{
         } else {
             throw new StratagemException("Unknown primitive type");
         }
+    }
+
+    private Type parseReferenceType(StratagemParser.Type_refContext ctx) {
+        Type value = parseType(ctx.type());
+        return new RefType(value);
     }
 
     private Type parseClosureType(StratagemParser.Type_funContext ctx) {
