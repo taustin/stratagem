@@ -25,6 +25,58 @@ public interface Expression {
 // NOTE: Using package access so that all implementations of Expression
 // can be included in the same file.
 
+class AssignExpr implements Expression {
+    private Expression refExpr;
+    private Expression valueExpr;
+
+    AssignExpr(Expression refExpr, Expression valueExpr) {
+        this.refExpr = refExpr;
+        this.valueExpr = valueExpr;
+    }
+
+    public Type typecheck(TypeEnvironment env) {
+        Type refType = refExpr.typecheck(env);
+        Type valueType = valueExpr.typecheck(env);
+
+        // Make sure our refExpr expression will result in a reference.
+        // Cast insertion rule (CAssign1).
+        if (!(refType instanceof RefType)) {
+            if (!(refType instanceof AnyType)) {
+                throw new StratagemTypecheckException("Inconsistent reference type: expected Ref, got " + refType);
+            }
+
+            // Wrap the refExpr in a cast to ensure it can be assigned to at runtime.
+            refType = new RefType(valueType);
+            refExpr = new CastExpr(refType, refExpr);
+        }
+
+        // refType is necessarily a RefType now. Great!
+        RefType refType_ = (RefType) refType;
+        Type refCellType = refType_.getCellType();
+
+        // Cast insertion rule (CAssign2).
+        if (!(refCellType.equals(valueType))) {
+            if (!refCellType.consistentWith(valueType)) {
+                throw new StratagemTypecheckException(
+                        "Inconsistent assignment type: expected " + refCellType + ", got " + valueType);
+            }
+
+            // Wrap the argument in a cast to ensure it can be given to our closureExpr at runtime.
+            valueExpr = new CastExpr(refCellType, valueExpr);
+        }
+
+        // Typing rule (TAssign).
+        return refType;
+    }
+
+    public Value evaluate(ValueEnvironment env) {
+        RefVal ref = (RefVal) refExpr.evaluate(env);
+        Value value = valueExpr.evaluate(env);
+        ref.assign(value);
+        return ref;
+    }
+}
+
 /**
  * Binary operators (+, -, *, etc).
  * Currently only numbers are supported.
@@ -133,6 +185,39 @@ class CastExpr implements Expression {
         } else {
             throw new StratagemCastException(null);
         }
+    }
+}
+
+class DerefExpr implements Expression {
+    private Expression refExpr;
+
+    DerefExpr(Expression refExpr) {
+        this.refExpr = refExpr;
+    }
+
+    public Type typecheck(TypeEnvironment env) {
+        Type refType = refExpr.typecheck(env);
+
+        // Cast insertion rule (CDeref1).
+        if (!(refType instanceof RefType)) {
+            if (!(refType instanceof AnyType)) {
+                throw new StratagemTypecheckException("Inconsistent reference type: expected Ref, got " + refType);
+            }
+
+            // Wrap the refExpr in a cast to ensure it can be assigned to at runtime.
+            refType = new RefType(AnyType.singleton);
+            refExpr = new CastExpr(refType, refExpr);
+        }
+
+        RefType refType_ = (RefType) refType;
+
+        // Typing rule (TDeref).
+        return refType_.getCellType();
+    }
+
+    public Value evaluate(ValueEnvironment env) {
+        RefVal ref = (RefVal) refExpr.evaluate(env);
+        return ref.dereference();
     }
 }
 
@@ -324,6 +409,24 @@ class PrintExpr implements Expression {
 
     private void print(Value value) {
         System.out.println(value.toString());
+    }
+}
+
+class RefExpr implements Expression {
+    private Expression valueExpr;
+
+    RefExpr(Expression valueExpr) {
+        this.valueExpr = valueExpr;
+    }
+
+    public Type typecheck(TypeEnvironment env) {
+        Type valueType = valueExpr.typecheck(env);
+        return new RefType(valueType);
+    }
+
+    public Value evaluate(ValueEnvironment env) {
+        Value value = valueExpr.evaluate(env);
+        return new RefVal(value);
     }
 }
 

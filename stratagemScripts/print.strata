@@ -2,4 +2,5 @@ print("string");  // string
 print(true);  // boolean
 print(fn(n: Int) { n + 1 });  // closure
 print(5 - 5);  // integer
+print(ref true);  // reference
 print(unit)  // unit

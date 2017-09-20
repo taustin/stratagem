@@ -128,6 +128,47 @@ class IntVal implements Value {
 }
 
 /**
+ * Reference cells.
+ */
+class RefVal implements Value {
+    private Value value;
+
+    public RefVal(Value value) {
+        assert(value != null);
+
+        this.value = value;
+    }
+
+    public Value dereference() {
+        return value;
+    }
+
+    public void assign(Value value) {
+        assert(value != null);
+
+        Type oldType = this.value.getType();
+        Type newType = value.getType();
+        assert(oldType.equals(newType));
+
+        this.value = value;
+    }
+
+    public Type getType() {
+        return new RefType(value.getType());
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        return this == that;
+    }
+
+    @Override
+    public String toString() {
+        return "ref " + value;
+    }
+}
+
+/**
  * Strings.
  */
 class StringVal implements Value {

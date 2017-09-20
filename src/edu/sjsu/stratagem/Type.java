@@ -9,8 +9,8 @@ public interface Type {
     Type findSupertypeWith(Type other);
 }
 
-//NOTE: Using package access so that all implementations of Type
-//can be included in the same file.
+// NOTE: Using package access so that all implementations of Type
+// can be included in the same file.
 
 /**
  * Dynamic any type.
@@ -22,8 +22,13 @@ class AnyType implements Type {
         return true;
     }
 
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof AnyType;
+    }
+
     public Type findSupertypeWith(Type other) {
-        return AnyType.singleton;
+        return this;
     }
 
     @Override
@@ -39,11 +44,16 @@ class BoolType implements Type {
     public static final BoolType singleton = new BoolType();
 
     public boolean consistentWith(Type other) {
-        return other instanceof BoolType || other instanceof AnyType;
+        return equals(other) || other instanceof AnyType;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof BoolType;
     }
 
     public Type findSupertypeWith(Type other) {
-        return other instanceof BoolType ? BoolType.singleton
+        return other instanceof BoolType ? this
                                          : AnyType.singleton;
     }
 
@@ -77,21 +87,15 @@ class ClosureType implements Type {
         if (other instanceof AnyType) {
             return true;
         }
+
+        // The below is like equals() but instead calls .consistentWith() on arg and ret.
         if (!(other instanceof ClosureType)) {
             return false;
         }
-        ClosureType that = (ClosureType)other;
-        return arg.consistentWith(that.arg) && ret.consistentWith(that.ret);
-    }
 
-    public Type findSupertypeWith(Type other) {
-        if (!(other instanceof ClosureType)) {
-            return AnyType.singleton;
-        }
         ClosureType that = (ClosureType)other;
-        return new ClosureType(
-                arg.findSupertypeWith(that.arg),
-                ret.findSupertypeWith(that.ret));
+
+        return arg.consistentWith(that.arg) && ret.consistentWith(that.ret);
     }
 
     @Override
@@ -103,6 +107,16 @@ class ClosureType implements Type {
         ClosureType that = (ClosureType)other;
 
         return arg.equals(that.arg) && ret.equals(that.ret);
+    }
+
+    public Type findSupertypeWith(Type other) {
+        if (!(other instanceof ClosureType)) {
+            return AnyType.singleton;
+        }
+        ClosureType that = (ClosureType)other;
+        return new ClosureType(
+                arg.findSupertypeWith(that.arg),
+                ret.findSupertypeWith(that.ret));
     }
 
     @Override
@@ -118,11 +132,16 @@ class IntType implements Type {
     public static final IntType singleton = new IntType();
 
     public boolean consistentWith(Type other) {
-        return other instanceof IntType || other instanceof AnyType;
+        return equals(other) || other instanceof AnyType;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof IntType;
     }
 
     public Type findSupertypeWith(Type other) {
-        return other instanceof IntType ? IntType.singleton
+        return other instanceof IntType ? this
                                         : AnyType.singleton;
     }
 
@@ -133,17 +152,84 @@ class IntType implements Type {
 }
 
 /**
+ * References.
+ */
+class RefType implements Type {
+    private Type cell;
+
+    public RefType(Type cell) {
+        this.cell = cell;
+    }
+
+    public Type getCellType() {
+        return cell;
+    }
+
+    public boolean consistentWith(Type other) {
+        // “Reference types are invariant with respect to consistency.”
+        //   -- Gradual Typing for Functional Languages, p. 85
+        //
+        // Two reference types are not consistent just because their cell types are consistent. Instead, for references
+        // to be consistent, their cell types must follow the stronger requirement of being equal. Otherwise, we could
+        // violate type safety with the following program:
+        //
+        //   let r1 = ref (fn(x) { x }) in
+        //   let r2 : ref ? = r1 in
+        //     r2 ← 1;
+        //     !r1(2)
+        //
+        // The application of 2 to r1 fails because r1, which has the type of a reference to function, points (unsafely)
+        // to a cell with an integer.
+        return equals(other) || other instanceof AnyType;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof RefType)) {
+            return false;
+        }
+
+        RefType that = (RefType)other;
+
+        return cell.equals(that.cell);
+    }
+
+    public Type findSupertypeWith(Type other) {
+        // We cannot use the consistent-with relationship here or we would violate type safety, for example:
+        //
+        //   let r1 = ref (fn(x) { x }) in
+        //   let r2 : Ref ? = if (true) { r1 } else { ref unit } in
+        //     r2 ← 1;
+        //     !r1(2)
+        //
+        // See also consistentWith() above.
+        return equals(other) ? this
+                             : AnyType.singleton;
+    }
+
+    @Override
+    public String toString() {
+        return "Ref " + cell.toString();
+    }
+}
+
+/**
  * Strings.
  */
 class StringType implements Type {
     public static final StringType singleton = new StringType();
 
     public boolean consistentWith(Type other) {
-        return other instanceof StringType || other instanceof AnyType;
+        return equals(other) || other instanceof AnyType;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof StringType;
     }
 
     public Type findSupertypeWith(Type other) {
-        return other instanceof StringType ? StringType.singleton
+        return other instanceof StringType ? this
                                            : AnyType.singleton;
     }
 
@@ -160,11 +246,16 @@ class UnitType implements Type {
     public static final UnitType singleton = new UnitType();
 
     public boolean consistentWith(Type other) {
-        return other instanceof UnitType || other instanceof AnyType;
+        return equals(other) || other instanceof AnyType;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof UnitType;
     }
 
     public Type findSupertypeWith(Type other) {
-        return other instanceof UnitType ? UnitType.singleton
+        return other instanceof UnitType ? this
                                          : AnyType.singleton;
     }
 
